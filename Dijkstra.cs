@@ -1,12 +1,10 @@
-﻿//using Medallion.Collections;
-using Priority_Queue; // fast
+﻿using Priority_Queue; // fast-priority queue
 using System.Collections.Generic;
 
 namespace TFE
 {
     public class Dijkstra
     {
-        //private PriorityQueue<QueueItem> _queue = new PriorityQueue<QueueItem>(new DoubleComparer()); // Medallion
         private FastPriorityQueue<PriorityQueueNode> _queue = new FastPriorityQueue<PriorityQueueNode>(2000); // fast priority queue
         private Graph _graph;
         public int lastVisitID = 0;
@@ -19,18 +17,13 @@ namespace TFE
 
         private KeyValuePair<double, State> PopNextItem()
         {
-            //----------------------------------------------- Medallion
-            //QueueItem qi = _queue.Dequeue();
-            //return new KeyValuePair<double, State>(qi.key, qi.value);
-            //----------------------------------------------- FastPriorityQueue
             PriorityQueueNode qi = _queue.Dequeue();
             return new KeyValuePair<double, State>(qi.key, qi.value);
         }
 
         private void AddNode(double cost, State state)
         {
-            //_queue.Enqueue(new QueueItem(cost, state));     //Medallion
-            _queue.Enqueue(new PriorityQueueNode(cost, state), (float)cost);  // FastPriorityQueue
+            _queue.Enqueue(new PriorityQueueNode(cost, state), (float)cost);  
         }
         private void ClearQueue()
         {
@@ -93,33 +86,10 @@ namespace TFE
         }
     }
 
-    #region Medallion priority queue
-    internal class DoubleComparer : IComparer<QueueItem>
-    {
-        public int Compare(QueueItem x, QueueItem y)
-        {
-            return x.key.CompareTo(y.key);
-        }
-    }
-
-    internal struct QueueItem
-    {
-        public double key { get; private set; }
-        public State value { get; private set; }
-
-        public QueueItem(double cost, State state)
-        {
-            key = cost;
-            value = state;
-        }
-    }
-    #endregion Medallion priority queue
-
-    // high speed priority queue
     internal class PriorityQueueNode : FastPriorityQueueNode
     {
-        public double key { get; private set; }
-        public State value { get; private set; }
+        public double key { get; }
+        public State value { get; }
 
         public PriorityQueueNode(double cost, State state)
         {
