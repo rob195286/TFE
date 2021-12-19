@@ -22,7 +22,7 @@ namespace TFE
             Console.WriteLine("fin du graph");
 
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
-            
+           
             sw.Start();
             dijkstra(g, idNodeSource, idNodeTarget);
             sw.Stop();
