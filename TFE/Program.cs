@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
+
 namespace TFE
 {
     class Program
@@ -12,9 +13,10 @@ namespace TFE
         {
             //int idNodeSource = 121155;
             int idNodeSource = 589961; // arlon
-            //int idNodeTarget = 901419;
             int idNodeTarget = 458523; // bruge
+            //int idNodeTarget = 901419;
             //int idNodeTarget = 597177;
+
             Stopwatch sw = new Stopwatch();
 
             Console.WriteLine("debut du graph");
@@ -65,32 +67,37 @@ namespace TFE
 
         static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
         {
-            var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
+            var dijkstra = new Dijkstra(g);
+            var r = dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget);
             
             int i = 0;
-            State state = r.Value;
-            List<KeyValuePair<Node, string>> id_RoadName = new List<KeyValuePair<Node, string>>();
+            PriorityQueueNode state = r.Value;
+            List<KeyValuePair<GraphNode, string>> id_RoadName = new List<KeyValuePair<GraphNode, string>>();
             
             state = r.Value;
             while (state != null)
             {
-                //id_RoadName.Add(new KeyValuePair<Node, string>(state.node, state.roadName));
+                id_RoadName.Add(new KeyValuePair<GraphNode, string>(state.graphNode, state.roadName));
                 state = state.previousState;
                 i++;
             }
-            /*
+            
+            
             id_RoadName.Reverse();
-            foreach (KeyValuePair<Node, string> nodeNroadName in id_RoadName)
+            foreach (KeyValuePair<GraphNode, string> nodeNroadName in id_RoadName)
             {
-                Console.Write(" node id : " + nodeNroadName.Key.id);
+                Console.Write(" graphNode id : " + nodeNroadName.Key.id);
                 Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
             }
-            */
+            
+            
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
-            Console.WriteLine("cost : " + r.Key);
+            Console.WriteLine("costS : " + r.Key);
+            Console.WriteLine("nbr de noeud pris de la queue : " + dijkstra.tookNodeNumber);
         }
+        /*
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage)
         {
             Stopwatch sw = new Stopwatch();
@@ -122,19 +129,19 @@ namespace TFE
         static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
         {
             var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
-            State state = r.Value;
+            PriorityQueueNode priorityQueueNode = r.Value;
             int i = 0;
             List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
 
-            state = r.Value;
+            priorityQueueNode = r.Value;
             while (true)
             {
-                nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
-                state = state.previousState;
+                nid.Add(new KeyValuePair<int, int>(priorityQueueNode.graphNode.id, priorityQueueNode.tag));
+                priorityQueueNode = priorityQueueNode.previousState;
                 i++;
-                if (state.previousState == null)
+                if (priorityQueueNode.previousState == null)
                 {
-                    nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
+                    nid.Add(new KeyValuePair<int, int>(priorityQueueNode.graphNode.id, priorityQueueNode.tag));
                     i++;
                     break;
                 }
@@ -176,5 +183,6 @@ namespace TFE
                 Console.WriteLine(isOk);
             }
         }
+        */
     }
 }

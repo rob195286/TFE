@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration.Attributes;
+using Priority_Queue;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,15 +10,15 @@ namespace TFE
 {
     public class Graph
     {
-        private Dictionary<int, Node> _nodes;
+        private Dictionary<int, GraphNode> _nodes;
 
         public Graph(string filePath = "ways.csv")
         {
-            _nodes = new Dictionary<int, Node>() { };
+            _nodes = new Dictionary<int, GraphNode>() { };
             CreateGraph(filePath);
         }
 
-        private Node GetNode(int id, double lon, double lat)
+        private GraphNode GetNode(int id, double lon, double lat)
         {
             if (NodeExist(id))
             {
@@ -25,7 +26,7 @@ namespace TFE
             }
             else
             {
-                return new Node(id, lon, lat);
+                return new GraphNode(id, lon, lat);
             }
         }
         private void CreateGraph(string filePath)
@@ -36,8 +37,8 @@ namespace TFE
                 csv.Context.TypeConverterOptionsCache.GetOptions<double?>().NullValues.Add("NULL");
                 foreach (CSVwayData way in csv.GetRecords<CSVwayData>())
                 {
-                    Node sourceNode = GetNode(way.source, way.x1, way.y1);
-                    Node targetNode = GetNode(way.target, way.x2, way.y2);
+                    GraphNode sourceNode = GetNode(way.source, way.x1, way.y1);
+                    GraphNode targetNode = GetNode(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s, way.maxspeed_forward);
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
@@ -60,7 +61,7 @@ namespace TFE
         {
             return _nodes.ContainsKey(id);
         }
-        public bool AddNode(Node node)
+        public bool AddNode(GraphNode node)
         {
             if (!NodeExist(node.id))// éviter d'ajouter 2x la même key et d'avoir une exception
             {
@@ -69,16 +70,16 @@ namespace TFE
             }
             return false;
         }
-        public Node GetNode(int nodeID)
+        public GraphNode GetNode(int nodeID)
         {
-            Node node = null; // todo : voir comment gére exception
+            GraphNode node = null; // todo : voir comment gére exception
             try
             {
                 node = _nodes[nodeID];
             }
             catch (System.Collections.Generic.KeyNotFoundException)
             {
-                Console.WriteLine("aucun node trouvé");// throw;
+                Console.WriteLine("aucun graphNode trouvé");// throw;
             }
             return node;
         }
@@ -97,9 +98,9 @@ namespace TFE
         /// </summary>
         /// <param name="nodeID"> Id du noeud à partir duquel on veut trouver ses voisins. </param>
         /// <returns> Retourne une liste de noeuds contenant l'nsemble des noeuds voisins. </returns>
-        public List<Node> GetNextNodes(int nodeID)
+        public List<GraphNode> GetNextNodes(int nodeID)
         {
-            List<Node> nodes = new List<Node>();
+            List<GraphNode> nodes = new List<GraphNode>();
             foreach (Edge edge in GetNode(nodeID).outgoingEdges)
             {
                 nodes.Add(edge.targetNode);
@@ -110,7 +111,7 @@ namespace TFE
 
     //--------------------------------------------------------------------------------------------------------
 
-    public class Node
+    public class GraphNode
     {
         public int id { get; private set; }
         public List<Edge> outgoingEdges { get; private set; }
@@ -118,7 +119,7 @@ namespace TFE
         public double longitude { get; private set; }
         public int VisitID;
 
-        public Node(int pid, double plon, double plat)
+        public GraphNode(int pid, double plon, double plat)
         {
             id = pid;
             outgoingEdges = new List<Edge>();
@@ -132,7 +133,7 @@ namespace TFE
         }
         public override string ToString()
         {
-            return "node info :" +
+            return "graphNode info :" +
                     "\n-----------" +
                     "\n - id : " + id +
                     "\n - latitude : " + latitude +
@@ -145,8 +146,8 @@ namespace TFE
     {
         public double? length_m { get; private set; }
         public string roadName { get; private set; }
-        public Node sourceNode { get; set; }
-        public Node targetNode { get; set; }
+        public GraphNode sourceNode { get; set; }
+        public GraphNode targetNode { get; set; }
         public double cost { get; private set; }
         public double? costS { get; private set; }
         public int maxSpeedForward { get; private set; }
@@ -157,8 +158,8 @@ namespace TFE
         {
             length_m = plength_m;
             roadName = proadName;
-            sourceNode = new Node(-1, 0, 0);
-            targetNode = new Node(-1, 0, 0);
+            sourceNode = new GraphNode(-1, 0, 0);
+            targetNode = new GraphNode(-1, 0, 0);
             cost = pcost;
             costS = pcoastS;
             maxSpeedForward = pmaxSpeedForward;
@@ -170,9 +171,9 @@ namespace TFE
                     "\n-----------" +
                     "\n - length_m : " + length_m +
                     "\n - roadName : " + roadName +
-                    "\n - node source id : " + sourceNode.id +
-                    "\n - node target id : " + targetNode.id +
-                    "\n - cost : " + cost +
+                    "\n - graphNode source id : " + sourceNode.id +
+                    "\n - graphNode target id : " + targetNode.id +
+                    "\n - costS : " + cost +
                     "\n - costS : " + costS +
                     "\n - maxSpeedForward : " + maxSpeedForward +
                     "\n";
