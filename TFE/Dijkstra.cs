@@ -14,7 +14,7 @@ namespace TFE
         public int numberOfnodes = 0;
         public int tookNodeNumber = 0;
 
-        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 2500)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 3000)
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
@@ -30,7 +30,7 @@ namespace TFE
         private void _AddPriotiyQueueNode(double cost, PriorityQueueNode state)
         {
             if (_queue.Count >= _priorityQueueMaxCapacity)
-                Console.WriteLine("attention, capacité max ateinte");
+                Console.WriteLine("attention, capacité max atteinte");
             _queue.Enqueue(state, (float)cost);  
         }
         private void _ClearQueue()
