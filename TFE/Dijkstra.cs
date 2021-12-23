@@ -55,43 +55,19 @@ namespace TFE
         ///     Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
         ///     La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
         /// </returns>
-        private double _CostEvaluation(GraphNode currentNode, GraphNode finalNode, PriorityQueueNode priorityQueueNode, double? costSToNextNode)
-        {
-            // Somme du coût des noeuds    |Le coût en second |
-            // précédements visités,       |pour rejoindre le |
-            // soit du chemin total        +  prochain noeud  + l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target              
-            return priorityQueueNode.costS + costSToNextNode ?? 9999; // + GeometricFunctions.TimeAsCrowFlies(currentNode, finalNode);
+        private double _CostEvaluation(GraphNode currentNode,
+                                       GraphNode finalNode,
+                                       PriorityQueueNode priorityQueueNode,
+                                       double? costSToNextNode, 
+                                       bool takeCrowFliesMetric)
+        {       
+            return priorityQueueNode.costS + // Somme du coût des noeuds précédements visités, soit du chemin total.      
+                costSToNextNode ?? 9999    + // Le coût pour rejoindre le prochain noeud où est vérifier que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                (takeCrowFliesMetric ? GeometricFunctions.TimeAsCrowFlies(currentNode, finalNode) : 0) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
+                ;
         }
-        
-        public KeyValuePair<double, PriorityQueueNode> ComputeShortestPath_SAV(int sourceNodeID, int targetNodeID)
-        {
-            /*
-            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) return NoPathFound(); // arrête si le noeud de départ ou celui recherché n'existe pas
-            lastVisitID++;
-            ClearQueue();
-            AddNode(0, new PriorityQueueNode(0, _graph.GetNode(sourceNodeID)));
-            while (!QueueIsEmpty())
-            {
-                var bestNode = PopNextItem();
-                if (bestNode.Value.graphNode.VisitID == lastVisitID) continue;
-                if (bestNode.Value.graphNode.id != targetNodeID) bestNode.Value.graphNode.VisitID = lastVisitID;
-                if (bestNode.Value.graphNode.id == targetNodeID) return new KeyValuePair<double, PriorityQueueNode>(bestNode.Key, bestNode.Value);
-                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.Value.graphNode.id, lastVisitID, targetNodeID))
-                {
-                    AddNode(bestNode.Key + nextEdge.costS,
-                            new PriorityQueueNode(bestNode.Key + nextEdge.costS,
-                                    nextEdge.finalNode,
-                                    bestNode.Value,
-                                    nextEdge.roadName,
-                                    nextEdge)
-                    );
-                }
-            }
-            return NoPathFound();
-            */
-           return new KeyValuePair<double, PriorityQueueNode>();
-        }
-        public KeyValuePair<double, PriorityQueueNode> ComputeShortestPath(int sourceNodeID, int targetNodeID)
+       
+        public KeyValuePair<double, PriorityQueueNode> ComputeShortestPath(int sourceNodeID, int targetNodeID, bool takeCrowFliesMetric = false)
         {
             if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) 
                 return _NoPathFound(); // arrête si le noeud de départ ou celui recherché n'existe pas
@@ -111,8 +87,8 @@ namespace TFE
                 tookNodeNumber++;
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.priorityQueueNode.graphNode.id, lastVisitID, targetNodeID))
                 {
-                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode, nextEdge.costS),
-                            new PriorityQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode, nextEdge.costS),
+                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode, nextEdge.costS, takeCrowFliesMetric),
+                            new PriorityQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode, nextEdge.costS, takeCrowFliesMetric),
                                     nextEdge.targetNode,
                                     bestNode.priorityQueueNode,
                                     nextEdge.roadName,

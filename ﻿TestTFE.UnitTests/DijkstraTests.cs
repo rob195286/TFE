@@ -32,7 +32,7 @@ namespace TestTFE.UnitTests
         }
 
         [TestMethod]
-        public void TestComputePathCostS()
+        public void TestComputePath()
         {
             int idNodeSource = 589961;
             int idNodeTarget = 458523;
@@ -40,44 +40,26 @@ namespace TestTFE.UnitTests
             Dijkstra dj = new Dijkstra(graph);
 
             Assert.AreEqual(9286.65196539782, dj.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+            Assert.AreEqual(811, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget).Value));
+            Assert.AreEqual(811, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget, true).Value));
 
             idNodeSource = 589961;
             idNodeTarget = 901419;
             Assert.AreEqual(6311.0951068659515, dj.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+            Assert.AreEqual(543, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget).Value));
+            Assert.AreEqual(543, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget, true).Value));
 
             idNodeSource = 121155;
             idNodeTarget = 597177;
             Assert.AreEqual(620.756077052044, dj.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+            Assert.AreEqual(165, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget).Value));
+            Assert.AreEqual(165, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget, true).Value));
 
             idNodeSource = 121155;
             idNodeTarget = 458523;
             Assert.AreEqual(3229.47845199183, dj.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
-        }
-
-        [TestMethod]
-        public void TestComputePathNumberOfNode()
-        {
-            int idNodeSource = 589961;
-            int idNodeTarget = 458523;
-
-            Dijkstra dj = new Dijkstra(graph);
-
-            Assert.AreEqual(811, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget).Value));
-
-            idNodeSource = 589961;
-            idNodeTarget = 901419;
-
-            Assert.AreEqual(543, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget).Value));
-
-            idNodeSource = 121155;
-            idNodeTarget = 597177;
-
-            Assert.AreEqual(165, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget).Value));
-
-            idNodeSource = 121155;
-            idNodeTarget = 458523;
-
             Assert.AreEqual(381, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget).Value));
+            Assert.AreEqual(381, _ComputeNodeNUmber(dj.ComputeShortestPath(idNodeSource, idNodeTarget, true).Value));
         }
 
         private int _ComputeNodeNUmber(PriorityQueueNode pqNode)

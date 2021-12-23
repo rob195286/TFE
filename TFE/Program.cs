@@ -26,11 +26,11 @@ namespace TFE
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
            
             sw.Start();
-            dijkstra(g, idNodeSource, idNodeTarget);
+            //dijkstra(g, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-            /*
+            
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
             using (TextFieldParser parser = new TextFieldParser(@"routablePointFromDB.csv"))
@@ -59,10 +59,24 @@ namespace TFE
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
 
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
+            //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds/1000);
-            */
+
+            sw.Reset();
+
+            sw.Start();
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 50, true);
+
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
+
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
+
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
+            //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds/1000);
+            
         }
 
         static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
@@ -97,8 +111,8 @@ namespace TFE
             Console.WriteLine("costS : " + r.Key);
             Console.WriteLine("nbr de noeud pris de la queue : " + dijkstra.tookNodeNumber);
         }
-        /*
-        static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage)
+        
+        static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage, bool crowFliesActivate =false)
         {
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
@@ -114,7 +128,7 @@ namespace TFE
                         //int randomInt = (int)(myRand.NextDouble()*numberOfRoutage);
                         int idsource = coordSource[routage];
                         int idTarget = coordTarget[routage];
-                        dj.ComputeShortestPath(idsource, idTarget);
+                        dj.ComputeShortestPath(idsource, idTarget, crowFliesActivate);
                     }
                     sw.Stop();
                     stream.WriteLine("{");
@@ -126,6 +140,7 @@ namespace TFE
             }
             Console.WriteLine("fin du benchmark! : " + numberOfRoutage);
         }
+        /*
         static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
         {
             var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
