@@ -22,15 +22,14 @@ namespace TFE
             Console.WriteLine("debut du graph");
             Graph g = new Graph();
             Console.WriteLine("fin du graph");
-
+            
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
-           
             sw.Start();
-            //dijkstra(g, idNodeSource, idNodeTarget);
+            dijkstra(g, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-            
+            /*
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
             using (TextFieldParser parser = new TextFieldParser(@"routablePointFromDB.csv"))
@@ -62,7 +61,7 @@ namespace TFE
             //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds/1000);
-
+            
             sw.Reset();
 
             sw.Start();
@@ -76,7 +75,7 @@ namespace TFE
             //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds/1000);
-            
+            */            
         }
 
         static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)

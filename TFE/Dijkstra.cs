@@ -26,11 +26,13 @@ namespace TFE
             PriorityQueueNode s = _queue.Dequeue();
             return new CostNState(s.costS, s);
         }
-
         private void _AddPriotiyQueueNode(double cost, PriorityQueueNode state)
         {
-            if (_queue.Count >= _priorityQueueMaxCapacity)
-                Console.WriteLine("attention, capacité max atteinte");
+            if (_queue.Count >= _priorityQueueMaxCapacity-1)
+            {
+                Console.WriteLine(Messages.MaxPQcapacity);
+                _queue.Resize(_priorityQueueMaxCapacity * 2);
+            }
             _queue.Enqueue(state, (float)cost);  
         }
         private void _ClearQueue()
@@ -41,8 +43,10 @@ namespace TFE
         {
             return true ? _queue.Count == 0 : false;
         }
-        private KeyValuePair<double, PriorityQueueNode> _NoPathFound()
+        private KeyValuePair<double, PriorityQueueNode> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
         {
+            Console.WriteLine(message);
+            Console.WriteLine($"Noeud source : {sourceNodeID} \nNoeud de destination : {targetNodeID}");
             return new KeyValuePair<double, PriorityQueueNode>();
         }
         /// <summary>
@@ -70,7 +74,7 @@ namespace TFE
         public KeyValuePair<double, PriorityQueueNode> ComputeShortestPath(int sourceNodeID, int targetNodeID, bool takeCrowFliesMetric = false)
         {
             if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) 
-                return _NoPathFound(); // arrête si le noeud de départ ou celui recherché n'existe pas
+                return _NoPathFound(sourceNodeID, targetNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisitID++;
             _ClearQueue();
             _AddPriotiyQueueNode(0, new PriorityQueueNode(0, _graph.GetNode(sourceNodeID), null));
@@ -96,7 +100,7 @@ namespace TFE
                     );
                 }
             }
-            return _NoPathFound();
+            return _NoPathFound(sourceNodeID, targetNodeID, Messages.NoPathFound);
         }
     }
 
