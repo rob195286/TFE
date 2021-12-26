@@ -46,7 +46,7 @@ namespace TFE
         private KeyValuePair<double, PriorityQueueNode> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
         {
             Console.WriteLine(message);
-            Console.WriteLine($"Noeud source : {sourceNodeID} \nNoeud de destination : {targetNodeID}");
+            Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, PriorityQueueNode>();
         }
         /// <summary>

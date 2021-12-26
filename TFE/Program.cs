@@ -29,27 +29,11 @@ namespace TFE
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-            /*
+            
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
-            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\routablePointFromDB.csv"))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(",");
-                bool flag = true;
-                while (!parser.EndOfData)
-                {
-                    var x = parser.ReadFields();
-                    if (flag)
-                    {
-                        flag = false;
-                        continue;
-                    }
-                    sourceNodes.Add(Convert.ToInt32(x[0]));
-                    targetNodes.Add(Convert.ToInt32(x[1]));
-                }
-            }
-            
+            FindRoutablePoint(g, sourceNodes, targetNodes);
+
             sw.Start();
             DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
 
@@ -75,7 +59,7 @@ namespace TFE
             //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds/1000);
-            */            
+                      
         }
 
         static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
@@ -117,7 +101,8 @@ namespace TFE
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\Dijkstra_performances.txt"))
+            string fileName = crowFliesActivate ? "Dijkstra_performances_with_crow.txt" : "Dijkstra_performances.txt";
+            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\"+ fileName))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
                 {
@@ -139,6 +124,34 @@ namespace TFE
                 stream.Close();
             }
             Console.WriteLine("fin du benchmark! : " + numberOfRoutage);
+        }
+        static void FindRoutablePoint(Graph graph, List<int> sourceNodes, List<int> targetNodes)
+        {
+            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\routablePointFromDB.csv"))
+            {
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
+                bool flag = true;
+                while (!parser.EndOfData)
+                {
+                    var x = parser.ReadFields();
+                    if (flag)
+                    {
+                        flag = false;
+                        continue;
+                    }
+                    if(graph.NodeExist(Convert.ToInt32(x[0])))
+                    {
+                        sourceNodes.Add(Convert.ToInt32(x[0]));
+                    }
+                    if(graph.NodeExist(Convert.ToInt32(x[1])))
+                    {
+                        targetNodes.Add(Convert.ToInt32(x[1]));
+                    }
+                }
+                Console.WriteLine(sourceNodes.Count);
+                Console.WriteLine(targetNodes.Count);
+            }
         }
         /*
         static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")

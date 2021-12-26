@@ -15,15 +15,16 @@ namespace TestTFE.UnitTests
         [TestMethod]
         public void TestGeomOFTwoCoord()
         {
+            double carSpeed = 120;
             node1 = new GraphNode(1, 4.390396011887681, 50.84849603970693);
             node2 = new GraphNode(2, 4.40755727599761, 50.83769071995793);
 
-            Assert.AreEqual(1.71 / CarSpeed, Math.Round(TimeAsCrowFlies(node1, node2)), 2);
+            Assert.AreEqual(1.71 / carSpeed, Math.Round(TimeAsCrowFlies(node1, node2, carSpeed)), 2);
 
             node1 = new GraphNode(1, 4.32094751414833, 50.875495617760116);
             node2 = new GraphNode(2, 4.467112406894378, 50.83142023866952);
 
-            Assert.AreEqual(11.33 / CarSpeed, Math.Round(TimeAsCrowFlies(node1, node2)), 2);
+            Assert.AreEqual(11.33 / carSpeed, Math.Round(TimeAsCrowFlies(node1, node2, carSpeed)), 2);
         }
     }
 }
