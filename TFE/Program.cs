@@ -25,14 +25,14 @@ namespace TFE
             
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
             sw.Start();
-            dijkstra(g, idNodeSource, idNodeTarget);
+            //dijkstra(g, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
             /*
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
-            using (TextFieldParser parser = new TextFieldParser(@"routablePointFromDB.csv"))
+            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\routablePointFromDB.csv"))
             {
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(",");
@@ -113,10 +113,11 @@ namespace TFE
         
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage, bool crowFliesActivate =false)
         {
+            Console.WriteLine("Benchmarkt !!");
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\stage\banchmark\Dijkstra_performances.txt"))
+            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\Dijkstra_performances.txt"))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
                 {
