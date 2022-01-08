@@ -1,7 +1,7 @@
 ﻿using Priority_Queue; // fast-priority queue https://github.com/BlueRaja/High-CarSpeed-Priority-Queue-for-C-Sharp/wiki/Using-the-FastPriorityQueue
 using System;
 using System.Collections.Generic;
-
+using System.IO;
 
 namespace TFE
 {
@@ -11,8 +11,8 @@ namespace TFE
         private Graph _graph;
         private int _priorityQueueMaxCapacity;
         public int lastVisitID = 0;
-        public int numberOfnodes = 0;
-        public int tookNodeNumber = 0;
+        public int totalNumberOfnodes;
+        public int tookNodeNumber;
 
         public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 3000)
         {
@@ -28,6 +28,7 @@ namespace TFE
         }
         private void _AddPriotiyQueueNode(double cost, PriorityQueueNode state)
         {
+            totalNumberOfnodes++;
             if (_queue.Count >= _priorityQueueMaxCapacity-1)
             {
                 Console.WriteLine(Messages.MaxPQcapacity);
@@ -45,8 +46,8 @@ namespace TFE
         }
         private KeyValuePair<double, PriorityQueueNode> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
         {
-            //Console.WriteLine(message);
-            //Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
+            Console.WriteLine(message);
+            Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, PriorityQueueNode>();
         }
         /// <summary>
@@ -67,28 +68,32 @@ namespace TFE
         {       
             return priorityQueueNode.costS + // Somme du coût des noeuds précédements visités, soit du chemin total.      
                 costSToNextNode ?? 9999    + // Le coût pour rejoindre le prochain noeud où est vérifier que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
-                (takeCrowFliesMetric ? GeometricFunctions.TimeAsCrowFlies(currentNode, finalNode) : 0) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
+                (takeCrowFliesMetric ? GeometricFunctions.TimeAsCrowFliesFromTo(currentNode, finalNode) : 0) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
                 ;
+            // Le cost_s min dans la db est de 0.0012993771362456654 s, le max est de 525.4317432915426 s
         }
-       
+
         public KeyValuePair<double, PriorityQueueNode> ComputeShortestPath(int sourceNodeID, int targetNodeID, bool takeCrowFliesMetric = false)
         {
             if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) 
                 return _NoPathFound(sourceNodeID, targetNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisitID++;
             _ClearQueue();
+            totalNumberOfnodes = 0;
             _AddPriotiyQueueNode(0, new PriorityQueueNode(0, _graph.GetNode(sourceNodeID), null));
             GraphNode finalNode = _graph.GetNode(targetNodeID);
+            tookNodeNumber = 0;
             while (!_QueueIsEmpty())
             {
                 CostNState bestNode = _PopHeadPriorityQueue();
+                tookNodeNumber++;
                 if (bestNode.priorityQueueNode.graphNode.VisitID == lastVisitID) 
                     continue;
                 if (bestNode.priorityQueueNode.graphNode.id != targetNodeID) 
                     bestNode.priorityQueueNode.graphNode.VisitID = lastVisitID;
-                if (bestNode.priorityQueueNode.graphNode.id == targetNodeID) 
+                if (bestNode.priorityQueueNode.graphNode.id == targetNodeID)
                     return new KeyValuePair<double, PriorityQueueNode>(bestNode.cost, bestNode.priorityQueueNode);
-                tookNodeNumber++;
+
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.priorityQueueNode.graphNode.id, lastVisitID, targetNodeID))
                 {
                     _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode, nextEdge.costS, takeCrowFliesMetric),
