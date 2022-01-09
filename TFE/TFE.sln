@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31911.196
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TFE", "TFE.csproj", "{F42363C2-220E-4EE2-8268-A718A65715D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "﻿TestTFE.UnitTests", "..\﻿TestTFE.UnitTests\﻿TestTFE.UnitTests.csproj", "{F6F36A77-814A-4A0F-87EC-A0189E131F35}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestTFE", "..\TestTFE\TestTFE.csproj", "{20919E88-32FD-4548-89AB-F98D9490D09E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{F42363C2-220E-4EE2-8268-A718A65715D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F42363C2-220E-4EE2-8268-A718A65715D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F42363C2-220E-4EE2-8268-A718A65715D4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6F36A77-814A-4A0F-87EC-A0189E131F35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6F36A77-814A-4A0F-87EC-A0189E131F35}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6F36A77-814A-4A0F-87EC-A0189E131F35}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6F36A77-814A-4A0F-87EC-A0189E131F35}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20919E88-32FD-4548-89AB-F98D9490D09E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20919E88-32FD-4548-89AB-F98D9490D09E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20919E88-32FD-4548-89AB-F98D9490D09E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20919E88-32FD-4548-89AB-F98D9490D09E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

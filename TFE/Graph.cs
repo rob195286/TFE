@@ -83,7 +83,7 @@ namespace TFE
             }
             return node;
         }
-        public IEnumerable<Edge> GetNextEdges(int nodeID, int visitId, int finalNodeID)
+        public IEnumerable<Edge> GetNextEdges(int nodeID, int visitId)
         {
             foreach (Edge edge in GetNode(nodeID).outgoingEdges)
             {

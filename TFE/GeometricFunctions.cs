@@ -36,15 +36,13 @@ namespace TFE
         public static double TimeAsCrowFliesFromTo(GraphNode currentNode, GraphNode targetNode, double carSpeed = 120)
         {
             /// <summary>
-            ///     1) 120 / 3600 = 1 / 30 -> km / s   | speed * 1000 / 3600 -> m / s
-            ///     2) 1 * 1000 / 30       -> m / s    | speed * 10 / 36     -> m / s
-            ///     3) 100 / 3 = 33,33     -> m / s    | speed * 5 / 18      -> m / s
+            ///     speed km/h = speed / 3600 km/s            
             /// </summary>
-            double carSpeedInMS = carSpeed == 120 ? 1 / 30 : carSpeed / 3600; 
-            return GeometricFunctions.Haversine(currentNode.latitude,
-                                                currentNode.longitude,
-                                                targetNode.latitude,
-                                                targetNode.longitude) / carSpeedInMS;
+            double carSpeedInKm_S = carSpeed / 3600; 
+            return Haversine(currentNode.latitude,
+                            currentNode.longitude,
+                            targetNode.latitude,
+                            targetNode.longitude) / carSpeedInKm_S;
         }
 
     }
