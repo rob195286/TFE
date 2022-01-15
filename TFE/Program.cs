@@ -27,8 +27,8 @@ namespace TFE
             var d = new Dijkstra(g);
             
             sw.Start();
-            //dijkstra(d, idNodeSource, idNodeTarget, false);
-            Console.Write("--------------------------------------------");
+            dijkstra(d, idNodeSource, idNodeTarget, false);
+            Console.WriteLine("--------------------------------------------");
             dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.Write("temps : ");

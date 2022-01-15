@@ -32,7 +32,8 @@ namespace TFE
             if (_queue.Count >= _priorityQueueMaxCapacity-1)
             {
                 Console.WriteLine(Messages.MaxPQcapacity);
-                _queue.Resize(_priorityQueueMaxCapacity * 2);
+                throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
+               _queue.Resize(_priorityQueueMaxCapacity * 2);
             }
             _queue.Enqueue(state, (float)cost);  
         }
@@ -51,26 +52,25 @@ namespace TFE
             return new KeyValuePair<double, PriorityQueueNode>();
         }
         /// <summary>
-        ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. Pour cela elle évalue les distances à vol d'oiseau entre les différents noeuds.
+        ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
+        ///     Pour cela elle évalue les distances à vol d'oiseau entre différents noeuds.
         /// </summary>
-        /// <param name="state"> Prend le priorityQueueNode actuel afin de pouvoir en extraire le coût. </param>
-        /// <param name="currentNode"> Prend le noeud courant, celui ayant le coût le plus faible dans la PQ. </param>
-        /// <param name="targetNode"> Prend le noeud cible à atteindre, le noeud final dont on veut connaître le plus court chemin. </param>
-        /// <returns> 
-        ///     Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
-        ///     La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
-        /// </returns>
-        private double _CostEvaluation(GraphNode currentNode,
+        /// <param name="nextNode"> Prend le prochain noeud du graphe, qui est celui où mène l'arête afin d'en récupérer les coordonnées géographiques. </param>
+        /// <param name="finalNode"> Prend le noeud cible à atteindre, le noeud final dont on veut connaître le plus court chemin. </param>
+        /// <param name="totalCost"> Prend le coût du noeud de la priority queue actuel, et donc le coup total qui a été parcouru jusqu'ici. </param>
+        /// <param name="costSToNextNode"> Coût de l'arête menant au prochain noeud (nextNode). </param>
+        /// <param name="withCrowFliesOption"> Option permettant de décider si on prend le temps à vol d'oiseau ou pas. </param>
+        /// <returns></returns>
+        private double _CostEvaluation(GraphNode nextNode,
                                        GraphNode finalNode,
-                                       PriorityQueueNode priorityQueueNode,
-                                       double? pcostSToNextNode, 
+                                       double totalCost,
+                                       double? costSToNextNode, 
                                        bool withCrowFliesOption)
         {
-            return priorityQueueNode.costS + // Somme du coût des noeuds précédements visités, soit du chemin total.   
-                (double)(pcostSToNextNode ?? 9999) + // Le coût pour rejoindre le prochain noeud où est vérifier que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
-                (withCrowFliesOption ? GeometricFunctions.TimeAsCrowFliesFromTo(currentNode, finalNode) : 0) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
-                ;
-            // Le cost_s min dans la db est de 0.0012993771362456654 s, le max est de 525.4317432915426 s
+            return totalCost + // Somme du coût des noeuds précédements visités, soit du chemin total.   
+                (double)(costSToNextNode ?? 9999) + // Le coût pour rejoindre le prochain noeud où est vérifier que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                (withCrowFliesOption ? GeometricFunctions.TimeAsCrowFliesFromTo(nextNode, finalNode) : 0) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
+                ; // Le cost_s min dans la db est de 0.0012993771362456654 s, le max est de 525.4317432915426 s
         }
 
         public KeyValuePair<double, PriorityQueueNode> ComputeShortestPath(int sourceNodeID, int targetNodeID, bool withCrowFliesOption = false)
@@ -96,8 +96,8 @@ namespace TFE
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.priorityQueueNode.graphNode.id, lastVisitID))
                 {
-                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode, nextEdge.costS, withCrowFliesOption),
-                            new PriorityQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode, nextEdge.costS, withCrowFliesOption),
+                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode.costS, nextEdge.costS, withCrowFliesOption),
+                            new PriorityQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode.costS, nextEdge.costS, withCrowFliesOption),
                                     nextEdge.targetNode,
                                     bestNode.priorityQueueNode,
                                     nextEdge.roadName,
