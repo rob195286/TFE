@@ -1,7 +1,7 @@
 ﻿using Priority_Queue; // fast-priority queue https://github.com/BlueRaja/High-CarSpeed-Priority-Queue-for-C-Sharp/wiki/Using-the-FastPriorityQueue
 using System;
 using System.Collections.Generic;
-using System.IO;
+
 
 namespace TFE
 {
@@ -63,11 +63,11 @@ namespace TFE
         private double _CostEvaluation(GraphNode currentNode,
                                        GraphNode finalNode,
                                        PriorityQueueNode priorityQueueNode,
-                                       double? costSToNextNode, 
+                                       double? pcostSToNextNode, 
                                        bool withCrowFliesOption)
         {
-            return priorityQueueNode.costS + // Somme du coût des noeuds précédements visités, soit du chemin total.      
-                costSToNextNode ?? 9999    + // Le coût pour rejoindre le prochain noeud où est vérifier que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+            return priorityQueueNode.costS + // Somme du coût des noeuds précédements visités, soit du chemin total.   
+                (double)(pcostSToNextNode ?? 9999) + // Le coût pour rejoindre le prochain noeud où est vérifier que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                 (withCrowFliesOption ? GeometricFunctions.TimeAsCrowFliesFromTo(currentNode, finalNode) : 0) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
                 ;
             // Le cost_s min dans la db est de 0.0012993771362456654 s, le max est de 525.4317432915426 s

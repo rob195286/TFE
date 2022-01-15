@@ -24,29 +24,12 @@ namespace TFE
             Console.WriteLine("fin du graph");
 
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
-            var dijkstra = new Dijkstra(g);
+            var d = new Dijkstra(g);
             
             sw.Start();
-            var r = dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget);
-            Console.WriteLine("------------------");
-            Console.WriteLine("costS : " + r.Key);
-            Console.WriteLine("nbr de noeud pris de la queue : " + dijkstra.tookNodeNumber);
-            Console.WriteLine("nbr total de noeud pri : " + dijkstra.totalNumberOfnodes);
-            Console.WriteLine("with crow  : " + false);
-            //dijkstra(g, idNodeSource, idNodeTarget);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds);
-            sw.Reset();
-            Console.Write("-------------------------");
-            
-            sw.Start();
-            //dijkstra(g, idNodeSource, idNodeTarget, true);
-            var rr = dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, true);
-            Console.WriteLine("------------------");
-            Console.WriteLine("costS : " + rr.Key);
-            Console.WriteLine("nbr de noeud pris de la queue : " + dijkstra.tookNodeNumber);
-            Console.WriteLine("nbr total de noeud pri : " + dijkstra.totalNumberOfnodes);
-            Console.WriteLine("with crow: " + true);
+            //dijkstra(d, idNodeSource, idNodeTarget, false);
+            Console.Write("--------------------------------------------");
+            dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
@@ -72,10 +55,9 @@ namespace TFE
             }*/
         }
 
-        static void dijkstra(Graph g, int idNodeSource, int idNodeTarget, bool withCrowFliesOption = false)
+        static void dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget, bool withCrowFliesOption = false)
         {
-            var dijkstra = new Dijkstra(g);
-            var r = dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, withCrowFliesOption);
+            var r = d.ComputeShortestPath(idNodeSource, idNodeTarget, withCrowFliesOption);
             
             int i = 0;
             PriorityQueueNode state = r.Value;
@@ -87,8 +69,7 @@ namespace TFE
                 id_RoadName.Add(new KeyValuePair<GraphNode, string>(state.graphNode, state.roadName));
                 state = state.previousState;
                 i++;
-            }
-            
+            }            
             /*
             id_RoadName.Reverse();
             foreach (KeyValuePair<GraphNode, string> nodeNroadName in id_RoadName)
@@ -96,14 +77,13 @@ namespace TFE
                 Console.Write(" graphNode id : " + nodeNroadName.Key.id);
                 Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
-            }
-            
+            }            
             */
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
             Console.WriteLine("costS : " + r.Key);
-            Console.WriteLine("nbr de noeud pris de la queue : " + dijkstra.tookNodeNumber);
-            Console.WriteLine("nbr total de noeud pri : " + dijkstra.totalNumberOfnodes);
+            Console.WriteLine("nbr de noeud pris de la queue : " + d.tookNodeNumber);
+            Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
         }
         static void LaunchDijkstraBenchmart(Graph g)
         {
