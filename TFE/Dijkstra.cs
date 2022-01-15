@@ -60,7 +60,10 @@ namespace TFE
         /// <param name="totalCost"> Prend le coût du noeud de la priority queue actuel, et donc le coup total qui a été parcouru jusqu'ici. </param>
         /// <param name="costSToNextNode"> Coût de l'arête menant au prochain noeud (nextNode). </param>
         /// <param name="withCrowFliesOption"> Option permettant de décider si on prend le temps à vol d'oiseau ou pas. </param>
-        /// <returns></returns>
+        /// <returns> 
+        ///      Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
+        ///      La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
+        /// </returns>
         private double _CostEvaluation(GraphNode nextNode,
                                        GraphNode finalNode,
                                        double totalCost,
