@@ -16,6 +16,9 @@ namespace TFE
             int idNodeTarget = 458523; // bruge
             //int idNodeTarget = 901419;
             //int idNodeTarget = 597177;
+            idNodeSource = 193183; // p1 bxl
+            idNodeTarget = 778238; // p2 bxl
+
 
             Stopwatch sw = new Stopwatch();
 
@@ -28,11 +31,9 @@ namespace TFE
             
             sw.Start();
             dijkstra(d, idNodeSource, idNodeTarget, false);
-            Console.WriteLine("--------------------------------------------");
             dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
-            Console.Write("temps : ");
-            Console.WriteLine(sw.ElapsedMilliseconds);
+            Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
 
 
            // LaunchDijkstraBenchmart(g);
@@ -82,6 +83,7 @@ namespace TFE
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
             Console.WriteLine("costS : " + r.Key);
+            Console.WriteLine("costSonly : " + r.Value.costSOnly);
             Console.WriteLine("nbr de noeud pris de la queue : " + d.tookNodeNumber);
             Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
         }
