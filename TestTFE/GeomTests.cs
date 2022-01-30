@@ -13,7 +13,7 @@ namespace TestTFE.UnitTests
         GraphNode node2;
 
         [TestMethod]
-        public void TestGeomOFTwoCoord()
+        public void TestTimeAsCrowFlies()
         {
             double carSpeed = 120 / 3600;
             node1 = new GraphNode(1, 4.390396011887681, 50.84849603970693);

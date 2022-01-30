@@ -14,7 +14,7 @@ namespace TFE
         public int totalNumberOfnodes;
         public int tookNodeNumber;
 
-        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 6000)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000)
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
@@ -32,10 +32,8 @@ namespace TFE
             if(_queue.Count >= 12000) throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
             if (_queue.Count >= _priorityQueueMaxCapacity-1)
             {
-                //Console.WriteLine(Messages.MaxPQcapacity);
+                Console.WriteLine(Messages.MaxPQcapacity);
                 throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
-                _priorityQueueMaxCapacity *= 2;
-               _queue.Resize(_priorityQueueMaxCapacity);
             }
             _queue.Enqueue(state, (float)cost);  
         }
@@ -61,7 +59,7 @@ namespace TFE
         /// <param name="finalNode"> Prend le noeud cible à atteindre, le noeud final dont on veut connaître le plus court chemin. </param>
         /// <param name="totalCost"> Prend le coût du noeud de la priority queue actuel, et donc le coup total qui a été parcouru jusqu'ici. </param>
         /// <param name="costSToNextNode"> Coût de l'arête menant au prochain noeud (nextNode). </param>
-        /// <param name="crowFliesOptionIsTrue"> Option permettant de décider si on prend le temps à vol d'oiseau ou pas. </param>
+        /// <param name="withCrowFlies"> Option permettant de décider si on prend le temps à vol d'oiseau ou pas. </param>
         /// <returns> 
         ///      Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
         ///      La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
@@ -69,12 +67,12 @@ namespace TFE
         private double _CostEvaluation(GraphNode nextNode,
                                        GraphNode finalNode,
                                        double totalCost,
-                                       double? costSToNextNode, 
+                                       double costSToNextNode, 
                                        bool withCrowFlies)
         {
             return totalCost + // Somme du coût des noeuds précédements visités, soit du chemin total.   
-                (double)(costSToNextNode ?? 999999) + // Le coût pour rejoindre le prochain noeud où est vérifier que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
-                ((withCrowFlies ? GeometricFunctions.TimeAsCrowFliesFromTo(nextNode, finalNode) : 0)) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
+                costSToNextNode + // Le coût pour rejoindre le prochain noeud.
+                ((withCrowFlies ? GeometricFunctions.TimeAsCrowFliesFromTo(nextNode, finalNode) : 0)/8000) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
                 ;
         }
 
@@ -104,7 +102,7 @@ namespace TFE
                     _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode.costS, nextEdge.costS, withCrowFliesOption),
                             new PriorityQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode.costS, nextEdge.costS, withCrowFliesOption),
                                     nextEdge.targetNode,
-                                    bestNode.priorityQueueNode.costSOnly + (double)nextEdge.costS,
+                                    bestNode.priorityQueueNode.costSOnly + nextEdge.costS,
                                     bestNode.priorityQueueNode,
                                     nextEdge.roadName,
                                     nextEdge)

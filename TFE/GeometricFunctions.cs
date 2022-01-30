@@ -4,7 +4,7 @@
 namespace TFE
 {
     public static class GeometricFunctions
-    {        
+    {
         /// <summary>
         ///     Permet de calculer la distance entre deux points sur une sphère, prit d'ici : https://fr.wikipedia.org/wiki/Formule_de_haversine
         /// </summary>
@@ -22,7 +22,7 @@ namespace TFE
         {
             return 2 * 6371 * Math.Asin(Math.Sqrt(Math.Pow(Math.Sin(((Math.PI*latitudeTarget/180)-(Math.PI * latitudeSource/180))/2), 2) + 
                                 (Math.Cos(Math.PI*latitudeSource/180)*Math.Cos(Math.PI*latitudeTarget/180)*Math.Pow(Math.Sin(((Math.PI*longitudeTarget/180) - 
-                                                                              (Math.PI*longitudeSource/180)) /2), 2))));
+                                                                              (Math.PI*longitudeSource/180))/2), 2))));
         }
         /// <summary>
         ///     Permet de calculer le temps a vol d'oiseau entre deux géoloacalisations à partir de noeuds passés en entrés.
@@ -33,12 +33,12 @@ namespace TFE
         /// <returns>
         ///     Retourne le temps en secondes.
         /// </returns>
-        public static double TimeAsCrowFliesFromTo(GraphNode currentNode, GraphNode targetNode, double carSpeed = 120)
+        public static double TimeAsCrowFliesFromTo(GraphNode currentNode, GraphNode targetNode, double carSpeed = 130)
         {
             /// <summary>
-            ///     speed km/h = speed / 3600 km/s            
+            ///     speed km/h = speed/3600 km/s            
             /// </summary>
-            double carSpeedInKm_S = carSpeed / 3600; 
+            double carSpeedInKm_S = carSpeed / 3600;
             return Haversine(currentNode.latitude,
                             currentNode.longitude,
                             targetNode.latitude,

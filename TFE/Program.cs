@@ -34,6 +34,7 @@ namespace TFE
             dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
+            Console.WriteLine("");
 
 
            // LaunchDijkstraBenchmart(g);
