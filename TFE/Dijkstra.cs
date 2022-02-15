@@ -47,7 +47,7 @@ namespace TFE
         }
         private KeyValuePair<double, PriorityQueueNode> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
         {
-            Console.WriteLine(message);
+            Console.Write(message);
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, PriorityQueueNode>();
         }
@@ -72,7 +72,7 @@ namespace TFE
         {
             return totalCost + // Somme du coût des noeuds précédements visités, soit du chemin total.   
                 costSToNextNode + // Le coût pour rejoindre le prochain noeud.
-                ((withCrowFlies ? GeometricFunctions.TimeAsCrowFliesFromTo(nextNode, finalNode) : 0)/8000) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
+                ((withCrowFlies ? GeometricFunctions.TimeAsCrowFliesFromTo(nextNode, finalNode) : 0)*0/140) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
                 ;
         }
 
@@ -90,12 +90,11 @@ namespace TFE
             {
                 CostWithNode bestNode = _PopHeadPriorityQueue();
                 tookNodeNumber++;
-                if (bestNode.priorityQueueNode.graphNode.VisitID == lastVisitID) 
-                    continue;
-                if (bestNode.priorityQueueNode.graphNode.id != targetNodeID) 
-                    bestNode.priorityQueueNode.graphNode.VisitID = lastVisitID;
                 if (bestNode.priorityQueueNode.graphNode.id == targetNodeID)
                     return new KeyValuePair<double, PriorityQueueNode>(bestNode.cost, bestNode.priorityQueueNode);
+                if (bestNode.priorityQueueNode.graphNode.VisitID == lastVisitID) 
+                    continue;
+                bestNode.priorityQueueNode.graphNode.VisitID = lastVisitID;                
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.priorityQueueNode.graphNode.id, lastVisitID))
                 {

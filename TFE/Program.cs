@@ -16,8 +16,8 @@ namespace TFE
             int idNodeTarget = 458523; // bruge
             //int idNodeTarget = 901419;
             //int idNodeTarget = 597177;
-            idNodeSource = 193183; // p1 bxl
-            idNodeTarget = 778238; // p2 bxl
+            //idNodeSource = 193183; // p1 bxl
+            //idNodeTarget = 778238; // p2 bxl
 
 
             Stopwatch sw = new Stopwatch();
@@ -31,7 +31,7 @@ namespace TFE
             
             sw.Start();
             dijkstra(d, idNodeSource, idNodeTarget, false);
-            dijkstra(d, idNodeSource, idNodeTarget, true);
+            //dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
             Console.WriteLine("");
