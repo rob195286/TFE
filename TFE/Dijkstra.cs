@@ -76,21 +76,21 @@ namespace TFE
                 ;
         }
 
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int targetNodeID, bool withCrowFliesOption = false)
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withCrowFliesOption = false)
         {
-            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) 
-                return _NoPathFound(sourceNodeID, targetNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
+            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) 
+                return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
             lastVisitID++;
             _ClearQueue();
             totalNumberOfnodes = 0;
             _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(sourceNodeID), 0, null));
-            Node targetNode = _graph.GetNode(targetNodeID);
+            Node endNode = _graph.GetNode(endNodeID);
             tookNodeNumber = 0;
             while (!_QueueIsEmpty())
             {
                 CostWithNode bestNode = _PopHeadPriorityQueue();
                 tookNodeNumber++;
-                if (bestNode.State.node.id == targetNodeID)
+                if (bestNode.State.node.id == endNodeID)
                     return new KeyValuePair<double, State>(bestNode.cost, bestNode.State);
                 if (bestNode.State.node.VisitID == lastVisitID) 
                     continue;
@@ -98,8 +98,8 @@ namespace TFE
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
                 {
-                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, targetNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
-                            new State(_CostEvaluation(nextEdge.targetNode, targetNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
+                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
+                            new State(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
                                     nextEdge.targetNode,
                                     bestNode.State.costSOnly + nextEdge.costS,
                                     bestNode.State,
@@ -108,7 +108,7 @@ namespace TFE
                     );
                 }
             }
-            return _NoPathFound(sourceNodeID, targetNodeID, Messages.NoPathFound);
+            return _NoPathFound(sourceNodeID, endNodeID, Messages.NoPathFound);
         }
     }
 
