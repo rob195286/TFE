@@ -9,15 +9,15 @@ namespace TFE
 {
     public class Graph
     {
-        private Dictionary<int, GraphNode> _nodes;
+        private Dictionary<int, Node> _nodes;
 
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
-            _nodes = new Dictionary<int, GraphNode>() { };
+            _nodes = new Dictionary<int, Node>() { };
             CreateGraph(filePath);
         }
 
-        private GraphNode GetNode(int id, double lon, double lat)
+        private Node GetNode(int id, double lon, double lat)
         {
             if (NodeExist(id))
             {
@@ -25,7 +25,7 @@ namespace TFE
             }
             else
             {
-                return new GraphNode(id, lon, lat);
+                return new Node(id, lon, lat);
             }
         }
         private void CreateGraph(string filePath)
@@ -36,8 +36,8 @@ namespace TFE
                 csv.Context.TypeConverterOptionsCache.GetOptions<double?>().NullValues.Add("NULL");
                 foreach (CSVwayData way in csv.GetRecords<CSVwayData>())
                 {
-                    GraphNode sourceNode = GetNode(way.source, way.x1, way.y1);
-                    GraphNode targetNode = GetNode(way.target, way.x2, way.y2);
+                    Node sourceNode = GetNode(way.source, way.x1, way.y1);
+                    Node targetNode = GetNode(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
@@ -60,7 +60,7 @@ namespace TFE
         {
             return _nodes.ContainsKey(id);
         }
-        public bool AddNode(GraphNode node)
+        public bool AddNode(Node node)
         {
             if (!NodeExist(node.id))// éviter d'ajouter 2x la même key et d'avoir une exception
             {
@@ -69,16 +69,16 @@ namespace TFE
             }
             return false;
         }
-        public GraphNode GetNode(int nodeID)
+        public Node GetNode(int nodeID)
         {
-            GraphNode node = null; // todo : voir comment gére exception
+            Node node = null; // todo : voir comment gére exception
             try
             {
                 node = _nodes[nodeID];
             }
             catch (System.Collections.Generic.KeyNotFoundException)
             {
-                Console.WriteLine("aucun graphNode trouvé");// throw;
+                Console.WriteLine("aucun node trouvé");// throw;
             }
             return node;
         }
@@ -97,9 +97,9 @@ namespace TFE
         /// </summary>
         /// <param name="nodeID"> Id du noeud à partir duquel on veut trouver ses voisins. </param>
         /// <returns> Retourne une liste de noeuds contenant l'nsemble des noeuds voisins. </returns>
-        public List<GraphNode> GetNextNodes(int nodeID)
+        public List<Node> GetNextNodes(int nodeID)
         {
-            List<GraphNode> nodes = new List<GraphNode>();
+            List<Node> nodes = new List<Node>();
             foreach (Edge edge in GetNode(nodeID).outgoingEdges)
             {
                 nodes.Add(edge.targetNode);
@@ -110,7 +110,7 @@ namespace TFE
 
     //--------------------------------------------------------------------------------------------------------
 
-    public class GraphNode
+    public class Node
     {
         public int id { get; private set; }
         public List<Edge> outgoingEdges { get; private set; }
@@ -118,7 +118,7 @@ namespace TFE
         public double longitude { get; private set; }
         public int VisitID;
 
-        public GraphNode(int pid, double plon, double plat)
+        public Node(int pid, double plon, double plat)
         {
             id = pid;
             outgoingEdges = new List<Edge>();
@@ -132,7 +132,7 @@ namespace TFE
         }
         public override string ToString()
         {
-            return "graphNode info :" +
+            return "node info :" +
                     "\n-----------" +
                     "\n - id : " + id +
                     "\n - latitude : " + latitude +
@@ -145,8 +145,8 @@ namespace TFE
     {
         public double? length_m { get; private set; }
         public string roadName { get; private set; }
-        public GraphNode sourceNode { get; set; }
-        public GraphNode targetNode { get; set; }
+        public Node sourceNode { get; set; }
+        public Node targetNode { get; set; }
         public double cost { get; private set; }
         public double costS { get; private set; }
         public int maxSpeedForward { get; private set; }
@@ -157,8 +157,8 @@ namespace TFE
         {
             length_m = plength_m;
             roadName = proadName;
-            sourceNode = new GraphNode(-1, 0, 0);
-            targetNode = new GraphNode(-1, 0, 0);
+            sourceNode = new Node(-1, 0, 0);
+            targetNode = new Node(-1, 0, 0);
             cost = pcost;
             costS = pcoastS;
             maxSpeedForward = pmaxSpeedForward;
@@ -170,8 +170,8 @@ namespace TFE
                     "\n-----------" +
                     "\n - length_m : " + length_m +
                     "\n - roadName : " + roadName +
-                    "\n - graphNode source id : " + sourceNode.id +
-                    "\n - graphNode target id : " + targetNode.id +
+                    "\n - node source id : " + sourceNode.id +
+                    "\n - node target id : " + targetNode.id +
                     "\n - costS : " + cost +
                     "\n - costS : " + costS +
                     "\n - maxSpeedForward : " + maxSpeedForward +

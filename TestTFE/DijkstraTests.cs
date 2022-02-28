@@ -56,7 +56,7 @@ namespace TestTFE.UnitTests
             Assert.AreEqual(381, _ComputeNodeNUmber(dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, true).Value));
         }
 
-        private int _ComputeNodeNUmber(PriorityQueueNode pqNode)
+        private int _ComputeNodeNUmber(State pqNode)
         {
             int i = 0;
             while (pqNode != null)

@@ -16,8 +16,8 @@ namespace TFE
             int idNodeTarget = 458523; // bruge
             //int idNodeTarget = 901419;
             //int idNodeTarget = 597177;
-            //idNodeSource = 193183; // p1 bxl
-            //idNodeTarget = 778238; // p2 bxl
+            idNodeSource = 193183; // p1 bxl
+            idNodeTarget = 778238; // p2 bxl
 
 
             Stopwatch sw = new Stopwatch();
@@ -62,21 +62,21 @@ namespace TFE
             var r = d.ComputeShortestPath(idNodeSource, idNodeTarget, withCrowFliesOption);
             
             int i = 0;
-            PriorityQueueNode state = r.Value;
-            List<KeyValuePair<GraphNode, string>> id_RoadName = new List<KeyValuePair<GraphNode, string>>();
+            State state = r.Value;
+            List<KeyValuePair<Node, string>> id_RoadName = new List<KeyValuePair<Node, string>>();
             
             state = r.Value;
             while (state != null)
             {
-                id_RoadName.Add(new KeyValuePair<GraphNode, string>(state.graphNode, state.roadName));
+                id_RoadName.Add(new KeyValuePair<Node, string>(state.node, state.roadName));
                 state = state.previousState;
                 i++;
             }            
             /*
             id_RoadName.Reverse();
-            foreach (KeyValuePair<GraphNode, string> nodeNroadName in id_RoadName)
+            foreach (KeyValuePair<Node, string> nodeNroadName in id_RoadName)
             {
-                Console.Write(" graphNode id : " + nodeNroadName.Key.id);
+                Console.Write(" node id : " + nodeNroadName.Key.id);
                 Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
             }            
@@ -183,19 +183,19 @@ namespace TFE
         static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
         {
             var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
-            PriorityQueueNode priorityQueueNode = r.Value;
+            State State = r.Value;
             int i = 0;
             List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
 
-            priorityQueueNode = r.Value;
+            State = r.Value;
             while (true)
             {
-                nid.Add(new KeyValuePair<int, int>(priorityQueueNode.graphNode.id, priorityQueueNode.tag));
-                priorityQueueNode = priorityQueueNode.previousState;
+                nid.Add(new KeyValuePair<int, int>(State.node.id, State.tag));
+                State = State.previousState;
                 i++;
-                if (priorityQueueNode.previousState == null)
+                if (State.previousState == null)
                 {
-                    nid.Add(new KeyValuePair<int, int>(priorityQueueNode.graphNode.id, priorityQueueNode.tag));
+                    nid.Add(new KeyValuePair<int, int>(State.node.id, State.tag));
                     i++;
                     break;
                 }

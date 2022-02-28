@@ -7,7 +7,7 @@ namespace TFE
 {
     public class Dijkstra
     {
-        private FastPriorityQueue<PriorityQueueNode> _queue;
+        private FastPriorityQueue<State> _queue;
         private Graph _graph;
         private int _priorityQueueMaxCapacity;
         public int lastVisitID = 0;
@@ -18,15 +18,15 @@ namespace TFE
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
-            _queue = new FastPriorityQueue<PriorityQueueNode>(_priorityQueueMaxCapacity);
+            _queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
         }
 
         private CostWithNode _PopHeadPriorityQueue()
         {
-            PriorityQueueNode s = _queue.Dequeue();
+            State s = _queue.Dequeue();
             return new CostWithNode(s.costS, s);
         }
-        private void _AddPriotiyQueueNode(double cost, PriorityQueueNode state)
+        private void _AddPriotiyQueueNode(double cost, State state)
         {
             totalNumberOfnodes++;
             if(_queue.Count >= 12000) throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
@@ -45,11 +45,11 @@ namespace TFE
         {
             return true ? _queue.Count == 0 : false;
         }
-        private KeyValuePair<double, PriorityQueueNode> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
+        private KeyValuePair<double, State> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
         {
             Console.Write(message);
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
-            return new KeyValuePair<double, PriorityQueueNode>();
+            return new KeyValuePair<double, State>();
         }
         /// <summary>
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
@@ -64,8 +64,8 @@ namespace TFE
         ///      Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
         ///      La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
         /// </returns>
-        private double _CostEvaluation(GraphNode nextNode,
-                                       GraphNode finalNode,
+        private double _CostEvaluation(Node nextNode,
+                                       Node finalNode,
                                        double totalCost,
                                        double costSToNextNode, 
                                        bool withCrowFlies)
@@ -76,33 +76,33 @@ namespace TFE
                 ;
         }
 
-        public KeyValuePair<double, PriorityQueueNode> ComputeShortestPath(int sourceNodeID, int targetNodeID, bool withCrowFliesOption = false)
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int targetNodeID, bool withCrowFliesOption = false)
         {
             if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) 
                 return _NoPathFound(sourceNodeID, targetNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
             lastVisitID++;
             _ClearQueue();
             totalNumberOfnodes = 0;
-            _AddPriotiyQueueNode(0, new PriorityQueueNode(0, _graph.GetNode(sourceNodeID), 0, null));
-            GraphNode finalNode = _graph.GetNode(targetNodeID);
+            _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(sourceNodeID), 0, null));
+            Node targetNode = _graph.GetNode(targetNodeID);
             tookNodeNumber = 0;
             while (!_QueueIsEmpty())
             {
                 CostWithNode bestNode = _PopHeadPriorityQueue();
                 tookNodeNumber++;
-                if (bestNode.priorityQueueNode.graphNode.id == targetNodeID)
-                    return new KeyValuePair<double, PriorityQueueNode>(bestNode.cost, bestNode.priorityQueueNode);
-                if (bestNode.priorityQueueNode.graphNode.VisitID == lastVisitID) 
+                if (bestNode.State.node.id == targetNodeID)
+                    return new KeyValuePair<double, State>(bestNode.cost, bestNode.State);
+                if (bestNode.State.node.VisitID == lastVisitID) 
                     continue;
-                bestNode.priorityQueueNode.graphNode.VisitID = lastVisitID;                
+                bestNode.State.node.VisitID = lastVisitID;                
 
-                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.priorityQueueNode.graphNode.id, lastVisitID))
+                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
                 {
-                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode.costS, nextEdge.costS, withCrowFliesOption),
-                            new PriorityQueueNode(_CostEvaluation(nextEdge.targetNode, finalNode, bestNode.priorityQueueNode.costS, nextEdge.costS, withCrowFliesOption),
+                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, targetNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
+                            new State(_CostEvaluation(nextEdge.targetNode, targetNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
                                     nextEdge.targetNode,
-                                    bestNode.priorityQueueNode.costSOnly + nextEdge.costS,
-                                    bestNode.priorityQueueNode,
+                                    bestNode.State.costSOnly + nextEdge.costS,
+                                    bestNode.State,
                                     nextEdge.roadName,
                                     nextEdge)
                     );
@@ -112,25 +112,25 @@ namespace TFE
         }
     }
 
-    public class PriorityQueueNode : FastPriorityQueueNode
+    public class State : FastPriorityQueueNode
     {
         public double costS { get; } // cost en seconde + temps à vol d'soieau
-        public GraphNode graphNode { get; }
-        public PriorityQueueNode previousState { get; }
+        public Node node { get; }
+        public State previousState { get; }
         public string roadName { get; }
         public Edge edgeToNode { get; }
         public double costSOnly { get; } // todo : à enlever -> on prend seulement les cost en seconde 
 
 
-        public PriorityQueueNode(double pcost,
-                                 GraphNode pnode,
-                                 double pcostSOnly,
-                                 PriorityQueueNode ppreviousState = null,
-                                 string proadName = "",
-                                 Edge pedge = null)
+        public State(double pcost,
+                    Node pnode,
+                    double pcostSOnly,
+                    State ppreviousState = null,
+                    string proadName = "",
+                    Edge pedge = null)
         {
             costS = pcost;
-            graphNode = pnode;
+            node = pnode;
             previousState = ppreviousState;
             roadName = proadName;
             edgeToNode = pedge;
@@ -140,12 +140,12 @@ namespace TFE
 
     internal struct CostWithNode{
         public double cost { get; }
-        public PriorityQueueNode priorityQueueNode { get; }
+        public State State { get; }
 
-        public CostWithNode(double pcost, PriorityQueueNode ppriorityQueueNode)
+        public CostWithNode(double pcost, State pstate)
         {
             cost = pcost;
-            priorityQueueNode = ppriorityQueueNode;
+            State = pstate;
         }
     }
 }
