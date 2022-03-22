@@ -14,7 +14,7 @@ namespace TFE
         public int totalNumberOfnodes;
         public int tookNodeNumber;
 
-        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 2*4000)
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
@@ -51,6 +51,10 @@ namespace TFE
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, State>();
         }
+        private double _Heuristics(Node nextNode, Node finalNode, double costToNextNode)
+        {
+            return (GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) / 7400) * costToNextNode;
+        }
         /// <summary>
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
         ///     Pour cela elle évalue les distances à vol d'oiseau entre différents noeuds.
@@ -68,15 +72,17 @@ namespace TFE
                                        Node finalNode,
                                        double totalCost,
                                        double costSToNextNode, 
-                                       bool withCrowFlies)
+                                       bool withEuclideanDistance,
+                                       int heuristicsWeight = 25)
         {
             return totalCost + // Somme du coût des noeuds précédements visités, soit du chemin total.   
                 costSToNextNode + // Le coût pour rejoindre le prochain noeud.
-                ((withCrowFlies ? GeometricFunctions.TimeAsCrowFliesFromTo(nextNode, finalNode) : 0)*0/140) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
+                (withEuclideanDistance ? _Heuristics(nextNode, finalNode, costSToNextNode) : 0) * heuristicsWeight
+                //((withEuclideanDistance ? GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) : 0)*0/1221.72) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
                 ;
         }
 
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withCrowFliesOption = false)
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withEuclideanOption = false)
         {
             if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) 
                 return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
@@ -98,8 +104,8 @@ namespace TFE
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
                 {
-                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
-                            new State(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withCrowFliesOption),
+                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withEuclideanOption),
+                            new State(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withEuclideanOption),
                                     nextEdge.targetNode,
                                     bestNode.State.costSOnly + nextEdge.costS,
                                     bestNode.State,

@@ -116,7 +116,7 @@ namespace TFE
         public List<Edge> outgoingEdges { get; private set; }
         public double latitude { get; private set; }
         public double longitude { get; private set; }
-        public int VisitID;
+        public int VisitID = 0;
 
         public Node(int pid, double plon, double plat)
         {

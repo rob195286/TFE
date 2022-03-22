@@ -31,7 +31,7 @@ namespace TFE
             
             sw.Start();
             dijkstra(d, idNodeSource, idNodeTarget, false);
-            //dijkstra(d, idNodeSource, idNodeTarget, true);
+            dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
             Console.WriteLine("");
