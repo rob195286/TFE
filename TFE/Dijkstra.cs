@@ -53,7 +53,8 @@ namespace TFE
         }
         private double _Heuristics(Node nextNode, Node finalNode, double costToNextNode)
         {
-            return (GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) / 7400) * costToNextNode;
+            //  1.7111
+            return costToNextNode * (GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) / 7477);
         }
         /// <summary>
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
