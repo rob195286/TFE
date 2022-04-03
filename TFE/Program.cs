@@ -119,6 +119,7 @@ namespace TFE
             }
             Console.WriteLine("fin du benchmark! : " + numberOfRoutage);
         }
+        /*
         static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
         {
             var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
@@ -176,5 +177,6 @@ namespace TFE
                 Console.WriteLine(isOk);
             }
         }
+        */
     }
 }

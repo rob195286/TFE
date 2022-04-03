@@ -1,101 +1,121 @@
 ﻿using Priority_Queue; // fast-priority queue
+using System;
 using System.Collections.Generic;
 
 namespace TFE
 {
     public class Dijkstra
     {
-        private FastPriorityQueue<PriorityQueueNode> _queue = new FastPriorityQueue<PriorityQueueNode>(2000); // fast priority queue
+        private FastPriorityQueue<State> _queue; // fast priority queue
         private Graph _graph;
+        private int _priorityQueueMaxCapacity;
         public int lastVisitID = 0;
-        public int numberOfnodes = 0;
+        public int totalNumberOfnodes;
+        public int tookNodeNumber;
 
-        public Dijkstra(Graph graph)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000)
         {
             _graph = graph;
+            _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
+            _queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
         }
 
-        private KeyValuePair<double, State> PopNextItem()
+        private CostWithNode _PopHeadPriorityQueue()
         {
-            PriorityQueueNode qi = _queue.Dequeue();
-            return new KeyValuePair<double, State>(qi.key, qi.value);
+            State s = _queue.Dequeue();
+            return new CostWithNode(s.totalCostS, s);
         }
-
-        private void AddNode(double cost, State state)
+        private void _AddPriotiyQueueNode(double cost, State state)
         {
-            _queue.Enqueue(new PriorityQueueNode(cost, state), (float)cost);  
+            totalNumberOfnodes++;
+            if (_queue.Count >= 12000) throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
+            if (_queue.Count >= _priorityQueueMaxCapacity - 1)
+            {
+                Console.WriteLine(Messages.MaxPQcapacity);
+                throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
+            }
+            _queue.Enqueue(state, (float)cost);
         }
-        private void ClearQueue()
+        private void _ClearQueue()
         {
             _queue.Clear();
         }
-        private bool QueueIsEmpty()
+        private bool _QueueIsEmpty()
         {
             return true ? _queue.Count == 0 : false;
         }
-        private KeyValuePair<double, State> NoPathFound()
+        private KeyValuePair<double, State> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
         {
+            Console.Write(message);
+            Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, State>();
         }
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int targetNodeID)
+        private double _CostEvaluation(double totalCostS,
+                                       double costSToNextNode)
         {
-            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) return NoPathFound(); // arrête si le noeud de départ ou celui recherché n'existe pas
+            return totalCostS + // Somme du coût des noeuds précédements visités, soit du chemin total.   
+                   costSToNextNode // Le coût pour rejoindre le prochain noeud.
+                   ;
+        }
+
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID)
+        {
+            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisitID++;
-            ClearQueue();
-            AddNode(0, new State(0, _graph.GetNode(sourceNodeID)));
-            while (!QueueIsEmpty())
+            _ClearQueue();
+            _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(sourceNodeID)));
+            while (!_QueueIsEmpty())
             {
-                var bestNodeAndCost = PopNextItem();
-                if (bestNodeAndCost.Value.node.VisitID == lastVisitID) continue;
-                if (bestNodeAndCost.Value.node.id != targetNodeID) bestNodeAndCost.Value.node.VisitID = lastVisitID;
-                if (bestNodeAndCost.Value.node.id == targetNodeID) return new KeyValuePair<double, State>(bestNodeAndCost.Key, bestNodeAndCost.Value);
-                foreach (Edge nextEdge in _graph.GetNextEdges(bestNodeAndCost.Value.node.id, lastVisitID, targetNodeID))
+                CostWithNode bestNode = _PopHeadPriorityQueue();
+                tookNodeNumber++;
+                if (bestNode.State.node.id == endNodeID)
+                    return new KeyValuePair<double, State>(bestNode.cost, bestNode.State);
+                if (bestNode.State.node.VisitID == lastVisitID)
+                    continue;
+                bestNode.State.node.VisitID = lastVisitID;
+
+                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
                 {
-                    AddNode(bestNodeAndCost.Key + nextEdge.cost,
-                            new State(bestNodeAndCost.Key + nextEdge.cost,
+                    _AddPriotiyQueueNode(_CostEvaluation(bestNode.State.totalCostS, nextEdge.costS),
+                            new State(_CostEvaluation(bestNode.State.totalCostS, nextEdge.costS),
                                     nextEdge.targetNode,
-                                    bestNodeAndCost.Value,
-                                    nextEdge.roadName,
-                                    nextEdge)
+                                    bestNode.State)
                     );
                 }
             }
-            return NoPathFound();
+            return _NoPathFound(sourceNodeID, endNodeID, Messages.NoPathFound);
         }
     }
-    public class State
+    public class State : FastPriorityQueueNode
     {
-        public double cost { get; private set; }
-        public double cost_s { get; private set; }
-        public double length_m { get; private set; }
-        public Node node { get; private set; }
-        public State previousState { get; private set; }
-        public string roadName { get; private set; }
-        public int tag { get; private set; }
-        public Edge edgeToNode { get; private set; }
+        public double totalCostS { get; } 
+        public Node node { get; }
+        public State previousState { get; }
+        public string roadName { get; }
+        public Edge edgeToNode { get; }
 
-        public State(double pcost, Node pnode, State ppreviousState = null, string proadName = "", Edge pedge = null)
+
+        public State(double ptotalCost,
+                    Node pnode,
+                    State ppreviousState = null
+                    )
         {
-            cost = pcost;
-            cost_s = -1;
-            length_m = -1;
+            totalCostS = ptotalCost;
             node = pnode;
             previousState = ppreviousState;
-            roadName = proadName;
-            edgeToNode = pedge;
         }
     }
 
-    internal class PriorityQueueNode : FastPriorityQueueNode
+    internal struct CostWithNode
     {
-        public double key { get; }
-        public State value { get; }
+        public double cost { get; }
+        public State State { get; }
 
-        public PriorityQueueNode(double cost, State state)
+        public CostWithNode(double pcost, State pstate)
         {
-            key = cost;
-            value = state;
+            cost = pcost;
+            State = pstate;
         }
     }
-    
+
 }

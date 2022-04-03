@@ -11,7 +11,7 @@ namespace TFE
     {
         private Dictionary<int, Node> _nodes;
 
-        public Graph(string filePath = "ways.csv")
+        public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             _nodes = new Dictionary<int, Node>() { };
             CreateGraph(filePath);
@@ -38,7 +38,7 @@ namespace TFE
                 {
                     Node sourceNode = GetNode(way.source, way.x1, way.y1);
                     Node targetNode = GetNode(way.target, way.x2, way.y2);
-                    Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s, way.maxspeed_forward);
+                    Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
                     edge.sourceNode = sourceNode;
@@ -46,7 +46,7 @@ namespace TFE
                     //------------------------------- two way
                     if (way.one_way == 2 || way.one_way == 0)
                     {
-                        edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s, way.maxspeed_backward);
+                        edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s ?? 999999, way.maxspeed_backward);
                         targetNode.AddOutgoingEdge(edge);
                         edge.sourceNode = targetNode;
                         edge.targetNode = sourceNode;
@@ -82,7 +82,7 @@ namespace TFE
             }
             return node;
         }
-        public IEnumerable<Edge> GetNextEdges(int nodeID, int visitId, int finalNodeID)
+        public IEnumerable<Edge> GetNextEdges(int nodeID, int visitId)
         {
             foreach (Edge edge in GetNode(nodeID).outgoingEdges)
             {
@@ -116,7 +116,7 @@ namespace TFE
         public List<Edge> outgoingEdges { get; private set; }
         public double latitude { get; private set; }
         public double longitude { get; private set; }
-        public int VisitID;
+        public int VisitID = 0;
 
         public Node(int pid, double plon, double plat)
         {
@@ -148,11 +148,11 @@ namespace TFE
         public Node sourceNode { get; set; }
         public Node targetNode { get; set; }
         public double cost { get; private set; }
-        public double? costS { get; private set; }
+        public double costS { get; private set; }
         public int maxSpeedForward { get; private set; }
 
         public Edge(double? plength_m, string proadName,
-                    double pcost, double? pcoastS,
+                    double pcost, double pcoastS,
                     int pmaxSpeedForward)
         {
             length_m = plength_m;
@@ -172,8 +172,8 @@ namespace TFE
                     "\n - roadName : " + roadName +
                     "\n - node source id : " + sourceNode.id +
                     "\n - node target id : " + targetNode.id +
-                    "\n - cost : " + cost +
-                    "\n - costS : " + costS +
+                    "\n - totalCostS : " + cost +
+                    "\n - totalCostS : " + costS +
                     "\n - maxSpeedForward : " + maxSpeedForward +
                     "\n";
         }
@@ -217,4 +217,3 @@ namespace TFE
         // public int tag_id { get; set; }
     }
 }
-
