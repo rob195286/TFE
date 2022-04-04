@@ -24,7 +24,7 @@ namespace TFE
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
            
             sw.Start();
-            dijkstra(g, idNodeSource, idNodeTarget);
+            //dijkstra(g, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
@@ -48,19 +48,8 @@ namespace TFE
                     targetNodes.Add(Convert.ToInt32(x[1]));
                 }
             }
-            
-            sw.Start();
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds/1000);
             */
+            LaunchDijkstraBenchmart(g);
         }
 
         static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
@@ -91,12 +80,32 @@ namespace TFE
             Console.WriteLine("i : " + i);
             Console.WriteLine("cost : " + r.Key);
         }
+        static void LaunchDijkstraBenchmart(Graph g)
+        {
+            Stopwatch sw = new Stopwatch();
+            List<int> sourceNodes = new List<int>();
+            List<int> targetNodes = new List<int>();
+            FindRoutablePoint(g, sourceNodes, targetNodes);
+
+            sw.Start();
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
+
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
+
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
+            //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds / 1000);
+        }
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage)
         {
+            Console.WriteLine("Benchmarkt !!");
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\stage\banchmark\Dijkstra_performances.txt"))
+            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\Dijkstra_performances.txt"))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
                 {
@@ -113,70 +122,100 @@ namespace TFE
                     stream.WriteLine("{");
                     stream.WriteLine(string.Format("    temps de calcul ms/s : {0:F10} ms -> {1:F10} s", sw.ElapsedMilliseconds, sw.ElapsedMilliseconds / 1000));
                     stream.WriteLine("    nombre de routage : " + numberOfRoutage);
+                    stream.WriteLine("    nombre de noeud total prit : " + dj.totalNumberOfnodes);
+                    stream.WriteLine("    nombre de noeud prit de la pq : " + dj.tookNodeNumber);
                     stream.WriteLine("}");
                 }
                 stream.Close();
             }
             Console.WriteLine("fin du benchmark! : " + numberOfRoutage);
         }
-        /*
-        static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
+        static void FindRoutablePoint(Graph graph, List<int> sourceNodes, List<int> targetNodes)
         {
-            var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
-            State state = r.Value;
-            int i = 0;
-            List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
-
-            state = r.Value;
-            while (true)
-            {
-                nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
-                state = state.previousState;
-                i++;
-                if (state.previousState == null)
-                {
-                    nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
-                    i++;
-                    break;
-                }
-            }
-            nid.Reverse();
-            using (TextFieldParser parser = new TextFieldParser(@pathFile))
+            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\routablePointFromDB.csv"))
             {
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(",");
-                bool isOk = true;
-                int j = 0;
                 bool flag = true;
                 while (!parser.EndOfData)
                 {
-                    if (j >= nid.Count)
-                    {
-                        isOk = false;
-                        break;
-                    }
+                    var x = parser.ReadFields();
                     if (flag)
                     {
-                        var kkkk = parser.ReadLine();
                         flag = false;
                         continue;
                     }
-
-                    int csvid = Convert.ToInt32(parser.ReadLine());
-                    var keyval = nid[j++];
-                    int idindex = keyval.Key;
-                    Console.Write("csvid : " + csvid + " id : " + idindex + " -> == ");
-                    Console.Write(csvid == idindex);
-                    if (csvid != idindex)
+                    if (graph.NodeExist(Convert.ToInt32(x[1])))
                     {
-                        isOk = false;
-                        Console.WriteLine(" //////////////////////////////////");
+                        sourceNodes.Add(Convert.ToInt32(x[1]));
                     }
-                    Console.WriteLine();
+                    if (graph.NodeExist(Convert.ToInt32(x[2])))
+                    {
+                        targetNodes.Add(Convert.ToInt32(x[2]));
+                    }
                 }
-                Console.WriteLine(isOk);
             }
         }
-        */
-    }
+
+
+            /*
+            static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
+            {
+                var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
+                State state = r.Value;
+                int i = 0;
+                List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
+
+                state = r.Value;
+                while (true)
+                {
+                    nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
+                    state = state.previousState;
+                    i++;
+                    if (state.previousState == null)
+                    {
+                        nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
+                        i++;
+                        break;
+                    }
+                }
+                nid.Reverse();
+                using (TextFieldParser parser = new TextFieldParser(@pathFile))
+                {
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(",");
+                    bool isOk = true;
+                    int j = 0;
+                    bool flag = true;
+                    while (!parser.EndOfData)
+                    {
+                        if (j >= nid.Count)
+                        {
+                            isOk = false;
+                            break;
+                        }
+                        if (flag)
+                        {
+                            var kkkk = parser.ReadLine();
+                            flag = false;
+                            continue;
+                        }
+
+                        int csvid = Convert.ToInt32(parser.ReadLine());
+                        var keyval = nid[j++];
+                        int idindex = keyval.Key;
+                        Console.Write("csvid : " + csvid + " id : " + idindex + " -> == ");
+                        Console.Write(csvid == idindex);
+                        if (csvid != idindex)
+                        {
+                            isOk = false;
+                            Console.WriteLine(" //////////////////////////////////");
+                        }
+                        Console.WriteLine();
+                    }
+                    Console.WriteLine(isOk);
+                }
+            }
+            */
+        }
 }

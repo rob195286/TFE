@@ -48,6 +48,7 @@ namespace TFE
         {
             Console.Write(message);
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
+            throw new InvalidOperationException("problèmmeeeeeeeeeeeeeeeeeeeee");
             return new KeyValuePair<double, State>();
         }
         private double _CostEvaluation(double totalCostS,
@@ -70,9 +71,9 @@ namespace TFE
                 tookNodeNumber++;
                 if (bestNode.State.node.id == endNodeID)
                     return new KeyValuePair<double, State>(bestNode.cost, bestNode.State);
-                if (bestNode.State.node.VisitID == lastVisitID)
+                if (bestNode.State.node.visitID == lastVisitID)
                     continue;
-                bestNode.State.node.VisitID = lastVisitID;
+                bestNode.State.node.visitID = lastVisitID;
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
                 {

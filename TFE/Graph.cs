@@ -10,6 +10,7 @@ namespace TFE
     public class Graph
     {
         private Dictionary<int, Node> _nodes;
+        private Dictionary<int, Edge> _edges;
 
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
@@ -38,7 +39,7 @@ namespace TFE
                 {
                     Node sourceNode = GetNode(way.source, way.x1, way.y1);
                     Node targetNode = GetNode(way.target, way.x2, way.y2);
-                    Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                    Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward, way.osm_id); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
                     edge.sourceNode = sourceNode;
@@ -46,7 +47,7 @@ namespace TFE
                     //------------------------------- two way
                     if (way.one_way == 2 || way.one_way == 0)
                     {
-                        edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s ?? 999999, way.maxspeed_backward);
+                        edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s ?? 999999, way.maxspeed_backward, way.osm_id);
                         targetNode.AddOutgoingEdge(edge);
                         edge.sourceNode = targetNode;
                         edge.targetNode = sourceNode;
@@ -76,7 +77,7 @@ namespace TFE
             {
                 node = _nodes[nodeID];
             }
-            catch (System.Collections.Generic.KeyNotFoundException)
+            catch (KeyNotFoundException)
             {
                 Console.WriteLine("aucun node trouvé");// throw;
             }
@@ -86,7 +87,7 @@ namespace TFE
         {
             foreach (Edge edge in GetNode(nodeID).outgoingEdges)
             {
-                if (edge.targetNode.VisitID != visitId && edge.cost >= 0)
+                if (edge.targetNode.visitID != visitId && edge.cost >= 0)
                 {
                     yield return edge;
                 }
@@ -106,6 +107,17 @@ namespace TFE
             }
             return nodes;
         }
+        public void ChangeEdgeCost(int osmId, double newCost, double newCostS)
+        {
+            if (newCostS == null)
+            {
+                _edges[osmId].cost = newCost;
+            }
+            else if (newCost == null)
+            {
+                _edges[osmId].costS = newCostS;
+            }
+        }
     }
 
     //--------------------------------------------------------------------------------------------------------
@@ -116,7 +128,7 @@ namespace TFE
         public List<Edge> outgoingEdges { get; private set; }
         public double latitude { get; private set; }
         public double longitude { get; private set; }
-        public int VisitID = 0;
+        public int visitID = 0;
 
         public Node(int pid, double plon, double plat)
         {
@@ -147,13 +159,14 @@ namespace TFE
         public string roadName { get; private set; }
         public Node sourceNode { get; set; }
         public Node targetNode { get; set; }
-        public double cost { get; private set; }
-        public double costS { get; private set; }
+        public double cost { get; set; }
+        public double costS { get; set; }
         public int maxSpeedForward { get; private set; }
+        public int osmId { get; private set; }
 
         public Edge(double? plength_m, string proadName,
                     double pcost, double pcoastS,
-                    int pmaxSpeedForward)
+                    int pmaxSpeedForward, int posmId)
         {
             length_m = plength_m;
             roadName = proadName;
@@ -162,6 +175,7 @@ namespace TFE
             cost = pcost;
             costS = pcoastS;
             maxSpeedForward = pmaxSpeedForward;
+            osmId = posmId;
         }
 
         public override string ToString()
@@ -175,6 +189,7 @@ namespace TFE
                     "\n - totalCostS : " + cost +
                     "\n - totalCostS : " + costS +
                     "\n - maxSpeedForward : " + maxSpeedForward +
+                    "\n - osm Id : " + osmId +
                     "\n";
         }
     }
@@ -213,7 +228,7 @@ namespace TFE
         public int maxspeed_forward { get; set; }
         [Index(15)]
         public int maxspeed_backward { get; set; }
-        // [Index(16)]
-        // public int tag_id { get; set; }
+        [Index(16)]
+        public int osm_id { get; set; }
     }
 }
