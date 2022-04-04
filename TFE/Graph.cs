@@ -40,6 +40,7 @@ namespace TFE
                     Node sourceNode = GetNode(way.source, way.x1, way.y1);
                     Node targetNode = GetNode(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward, way.osm_id); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                    _edges.Add(edge.osmId, edge);
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
                     edge.sourceNode = sourceNode;
