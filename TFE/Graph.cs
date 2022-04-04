@@ -15,6 +15,7 @@ namespace TFE
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             _nodes = new Dictionary<int, Node>() { };
+            _edges = new Dictionary<int, Edge>() { };
             CreateGraph(filePath);
         }
 
@@ -40,7 +41,7 @@ namespace TFE
                     Node sourceNode = GetNode(way.source, way.x1, way.y1);
                     Node targetNode = GetNode(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward, way.osm_id); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
-                    _edges.Add(edge.osmId, edge);
+                    SaveEdge(edge);
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
                     edge.sourceNode = sourceNode;
@@ -57,6 +58,11 @@ namespace TFE
                     AddNode(targetNode);
                 }
             }
+        }
+        private void SaveEdge(Edge edge)
+        {
+            if (!_edges.ContainsKey(edge.osmId))
+                _edges.Add(edge.osmId, edge);
         }
         public bool NodeExist(int id)
         {
