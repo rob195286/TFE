@@ -61,7 +61,8 @@ namespace TFE
 
         public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID)
         {
-            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
+            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) 
+                return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisitID++;
             _ClearQueue();
             _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(sourceNodeID)));

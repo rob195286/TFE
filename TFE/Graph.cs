@@ -44,6 +44,7 @@ namespace TFE
                     SaveEdge(edge);
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
+                    targetNode.AddIncomingEdge(edge); // Ajout pour le reverse graph
                     edge.sourceNode = sourceNode;
                     edge.targetNode = targetNode;
                     //------------------------------- two way
@@ -51,6 +52,7 @@ namespace TFE
                     {
                         edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s ?? 999999, way.maxspeed_backward, way.osm_id);
                         targetNode.AddOutgoingEdge(edge);
+                        sourceNode.AddIncomingEdge(edge); // Ajout pour le reverse graph
                         edge.sourceNode = targetNode;
                         edge.targetNode = sourceNode;
                     }
@@ -133,6 +135,7 @@ namespace TFE
     {
         public int id { get; private set; }
         public List<Edge> outgoingEdges { get; private set; }
+        public List<Edge> incomingEdges { get; private set; }
         public double latitude { get; private set; }
         public double longitude { get; private set; }
         public int visitID = 0;
@@ -141,6 +144,7 @@ namespace TFE
         {
             id = pid;
             outgoingEdges = new List<Edge>();
+            incomingEdges = new List<Edge>();
             latitude = plat;
             longitude = plon;
         }
@@ -148,6 +152,10 @@ namespace TFE
         public void AddOutgoingEdge(Edge edge)
         {
             outgoingEdges.Add(edge);
+        }
+        public void AddIncomingEdge(Edge edge)
+        {
+            incomingEdges.Add(edge);
         }
         public override string ToString()
         {
