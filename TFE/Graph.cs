@@ -104,20 +104,6 @@ namespace TFE
                 }
             }
         }     
-        /// <summary>
-        /// Fonction utilisée pour les test unitaires, récupère les noeuds suivant au noeud inséré.
-        /// </summary>
-        /// <param name="nodeID"> Id du noeud à partir duquel on veut trouver ses voisins. </param>
-        /// <returns> Retourne une liste de noeuds contenant l'nsemble des noeuds voisins. </returns>
-        public List<Node> GetNextNodessss(int nodeID)
-        {
-            List<Node> nodes = new List<Node>();
-            foreach (Edge edge in GetNode(nodeID).outgoingEdges)
-            {
-                nodes.Add(edge.targetNode);
-            }
-            return nodes;
-        }
         public void ChangeEdgeCost(int osmId, double newCost, double newCostS)
         {
             if (newCostS == null)
