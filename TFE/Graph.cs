@@ -92,22 +92,24 @@ namespace TFE
             }
             return node;
         }
-        public IEnumerable<Edge> GetNextEdges(int nodeID, int visitId)
+        public IEnumerable<Edge> GetNextEdges(int nodeID, int visitId, bool backwardWay = false)
         {
-            foreach (Edge edge in GetNode(nodeID).outgoingEdges)
+            List<Edge> edges = backwardWay ? GetNode(nodeID).incomingEdges : GetNode(nodeID).outgoingEdges;
+            foreach (Edge edge in edges)
             {
-                if (edge.targetNode.visitID != visitId && edge.cost >= 0)
+                int visiID = backwardWay ? edge.sourceNode.visitIDbackward : edge.targetNode.visitID;
+                if (visiID != visitId && edge.cost >= 0)
                 {
                     yield return edge;
                 }
             }
-        }
+        }     
         /// <summary>
         /// Fonction utilisée pour les test unitaires, récupère les noeuds suivant au noeud inséré.
         /// </summary>
         /// <param name="nodeID"> Id du noeud à partir duquel on veut trouver ses voisins. </param>
         /// <returns> Retourne une liste de noeuds contenant l'nsemble des noeuds voisins. </returns>
-        public List<Node> GetNextNodes(int nodeID)
+        public List<Node> GetNextNodessss(int nodeID)
         {
             List<Node> nodes = new List<Node>();
             foreach (Edge edge in GetNode(nodeID).outgoingEdges)
@@ -139,6 +141,7 @@ namespace TFE
         public double latitude { get; private set; }
         public double longitude { get; private set; }
         public int visitID = 0;
+        public int visitIDbackward = 0;
 
         public Node(int pid, double plon, double plat)
         {

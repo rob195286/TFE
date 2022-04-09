@@ -24,7 +24,7 @@ namespace TFE
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
            
             sw.Start();
-            //dijkstra(g, idNodeSource, idNodeTarget);
+            dijkstra(g, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
@@ -49,7 +49,7 @@ namespace TFE
                 }
             }
             */
-            LaunchDijkstraBenchmart(g);
+            //LaunchDijkstraBenchmart(g);
         }
 
         static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
