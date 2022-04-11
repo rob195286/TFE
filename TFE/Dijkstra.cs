@@ -10,7 +10,7 @@ namespace TFE
         private FastPriorityQueue<State> _queueB; // fast Backward priority queue
         private Graph _graph;
         private int _priorityQueueMaxCapacity;
-        public int lastVisitID = 0;
+        public int lastVisit = 0;
         public int totalNumberOfnodes;
         public int tookNodeNumber;
 
@@ -22,7 +22,7 @@ namespace TFE
             _queueB = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
         }
 
-        private CostWithNode _PopHeadPriorityQueue(bool backwardPQ = false)
+        private CostWithNode _PopPriorityQueueHead(bool backwardPQ)
         {
             if (backwardPQ)
             {
@@ -35,12 +35,13 @@ namespace TFE
                 return new CostWithNode(s.totalCostS, s);
             }
         }
-        private void _AddPriotiyQueueNode(double cost, State state, bool backwardPQ = false)
+        private void _AddPriotiyQueueNode(double cost, State state, bool backwardPQ)
         {
             totalNumberOfnodes++;
             if (_queue.Count >= _priorityQueueMaxCapacity - 1 || _queueB.Count >= _priorityQueueMaxCapacity - 1)
             {
                 Console.WriteLine(Messages.MaxPQcapacity);
+                Console.WriteLine(_queue.Count);
                 throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
             }
             if (backwardPQ)
@@ -53,30 +54,30 @@ namespace TFE
             _queue.Clear();
             _queueB.Clear();
         }
-        private bool _QueueIsEmpty(bool backwardPQ = false)
+        private bool _QueueIsEmpty(bool backwardPQ)
         {
             if (backwardPQ)
-                return true ? _queueB.Count == 0 : false;
+                return _queueB.Count == 0;
             else
-                return true ? _queue.Count == 0 : false;
+                return _queue.Count == 0;
         }
-        private void _ExtendNodesToVisit(CostWithNode bestNodeF, CostWithNode bestNodeB, double mu, bool backwardPQ)
+        private void _SearchNextNodes(CostWithNode bestNodeF, CostWithNode bestNodeB, double mu, bool backwardPQ)
         {
             CostWithNode bestNode = backwardPQ ? bestNodeB : bestNodeF;
-            foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
+            foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.vertex.id, lastVisit))
             {
-                double cost = _CostEvaluation(bestNode.State.totalCostS, nextEdge.costS);
-                _AddPriotiyQueueNode(cost, new State(cost, nextEdge.targetNode, bestNode.State));
+                double cost = _CostEvaluation(bestNode.state.totalCostS, nextEdge.costS);
+                //_AddPriotiyQueueNode(cost, new State(cost, nextEdge.targetVertex, headForward.state));
                 if ((cost + bestNodeB.cost) < mu)
                 {
                     mu = cost + bestNodeB.cost;
                 }
             }
         }
-        private KeyValuePair<double, State> _NoPathFound(int sourceNodeID, int targetNodeID, string message)
+        private KeyValuePair<double, State> _NoPathFound(int sourceVertexID, int destinationVertexID, string message)
         {
             Console.Write(message);
-            Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
+            Console.WriteLine($"Noeud source -> {sourceVertexID}, noeud de destination -> {destinationVertexID}");
             throw new InvalidOperationException("problèmme");
             return new KeyValuePair<double, State>();
         }
@@ -88,87 +89,134 @@ namespace TFE
                    ;
         }
 
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID)
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int destinationVertexID)
         {
-            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) 
-                return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
-            lastVisitID++;
+            Dictionary<int, double> bestPathNodesForward = new Dictionary<int, double>();
+            Dictionary<int, double> bestPathNodesBackward = new Dictionary<int, double>();
+            if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(destinationVertexID)) 
+                return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
+            lastVisit++;
             _ClearQueue();
-            _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(sourceNodeID)));
-            _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(endNodeID)), true);
+            _AddPriotiyQueueNode(0, new State(0, _graph.GetVertex(sourceVertexID)), false);
+            _AddPriotiyQueueNode(0, new State(0, _graph.GetVertex(destinationVertexID)), true);
+            //_AddPriotiyQueueNode(0, new State(0, 0, 0, _graph.GetVertex(sourceVertexID)));
+            //_AddPriotiyQueueNode(0, new State(0, 0, 0, _graph.GetVertex(destinationVertexID), true));
             double mu = Double.PositiveInfinity;
-            while (!_QueueIsEmpty() && !_QueueIsEmpty(true))
+           // double backwardBestCost = Double.PositiveInfinity;
+            while (!_QueueIsEmpty(false) && !_QueueIsEmpty(true))
             {
-                CostWithNode bestNode = _PopHeadPriorityQueue();
-                CostWithNode bestNodeB = _PopHeadPriorityQueue(true);
+                CostWithNode headForward = _PopPriorityQueueHead(false);
+                CostWithNode headBackward = _PopPriorityQueueHead(true);
+                bool forwardHeadIsVisited = headForward.state.vertex.lastVisitForward == lastVisit;
+                bool backwardHeadIsVisited = headBackward.state.vertex.lastVisitBackward == lastVisit;
+                headForward.state.vertex.lastVisitForward = lastVisit;
+                headBackward.state.vertex.lastVisitBackward = lastVisit;
+                bestPathNodesForward.Add(headForward.state.vertex.id, headForward.cost);
+                bestPathNodesBackward.Add(headBackward.state.vertex.id, headBackward.cost);
                 tookNodeNumber++;
-                if (bestNode.cost + bestNodeB.cost >= mu)
-                    return new KeyValuePair<double, State>(bestNode.cost + bestNodeB.cost, bestNode.State); // modifier les states
-                
-                bestNode.State.node.visitID = lastVisitID;
-                bestNodeB.State.node.visitIDbackward = lastVisitID;
-
-
-
-               // _ExtendNodesToVisit(bestNode, bestNodeB, mu, false);
-                //_ExtendNodesToVisit(bestNode, bestNodeB, mu, true);
+                if (headForward.cost + headBackward.cost >= mu)
+                    return new KeyValuePair<double, State>(headForward.cost + headBackward.cost, headForward.state); // modifier les states
                 /*
-                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
+                if (headForward.state.totalCostSFrontward + headForward.state.totalCostSBackward >= mu)
+                    return new KeyValuePair<double, State>(headForward.state.totalCostSFrontward + headForward.state.totalCostSBackward, headForward.state); // modifier les states
+
+                if (headForward.state.vertex.lastVisitForward == lastVisit)
+                    continue;
+
+                if (headForward.state.isBackwardNode) // backward
                 {
-                    if (bestNode.State.node.visitID == lastVisitID)
-                        continue;
-                    double cost = _CostEvaluation(bestNode.State.totalCostS, nextEdge.costS);
-                    _AddPriotiyQueueNode(cost, new State(cost, nextEdge.targetNode, bestNode.State));
-                    if ((cost + bestNodeB.cost) < mu)
+                    headForward.state.vertex.visitIDbackward = lastVisit;
+                    foreach (Edge nextEdge in _graph.GetPreviousEdges(headForward.state.vertex.id, lastVisit))
                     {
-                        mu = cost + bestNodeB.cost;
+                        double cost = _CostEvaluation(headForward.state.totalCostS, nextEdge.costS);
+                        _AddPriotiyQueueNode(cost, new State(cost, cost, headForward.state.totalCostSFrontward, nextEdge.sourceVertex, true, headForward.state));
+                        if (headForward.state.vertex.lastVisitForward == lastVisit && nextEdge.targetVertex.lastVisitForward == lastVisit)
+                            mu = cost + headForward.state.totalCostSFrontward;
                     }
-                }  
-                foreach (Edge nextEdge in _graph.GetNextEdges(bestNodeB.State.node.id, lastVisitID, true))
+                }
+                else // forward
                 {
-                    if (bestNode.State.node.visitIDbackward == lastVisitID)
-                        continue;
-                    double cost = _CostEvaluation(bestNodeB.State.totalCostS, nextEdge.costS);
-                    _AddPriotiyQueueNode(cost, new State(cost, nextEdge.sourceNode, bestNodeB.State));
-                    if ((cost + bestNodeB.cost) < mu)
+                    headForward.state.vertex.lastVisitForward = lastVisit;                    
+                    foreach (Edge nextEdge in _graph.GetNextEdges(headForward.state.vertex.id, lastVisit))
                     {
-                        mu = cost + bestNode.cost;
+                        double cost = _CostEvaluation(headForward.state.totalCostS, nextEdge.costS);
+                        _AddPriotiyQueueNode(cost, new State(cost, headForward.state.totalCostSBackward, cost, nextEdge.targetVertex, false, headForward.state));
+                        if (headForward.state.vertex.lastVisitForward == lastVisit && nextEdge.targetVertex.lastVisitForward == lastVisit)
+                            mu = cost + headForward.state.totalCostSBackward;
+                        //if (headForward.state.vertex.lastVisitForward == lastVisit && nextEdge.targetVertex.visitIDbackward == lastVisit)
+                         //   mu = cost + backwardBestCost;
                     }
-                } 
+                }
                 */
+
+
+
+                // _ExtendNodesToVisit(headForward, headBackward, mu, false);
+                //_ExtendNodesToVisit(headForward, headBackward, mu, true);
+                if (!forwardHeadIsVisited)
+                {
+                    foreach (Edge nextEdge in _graph.GetNextEdges(headForward.state.vertex.id, lastVisit)) // forward
+                    {
+                        double cost = _CostEvaluation(headForward.state.totalCostS, nextEdge.costS);
+                        _AddPriotiyQueueNode(cost, new State(cost, nextEdge.targetVertex, headForward.state), true);
+                        //if ((cost + headBackward.cost < mu) && nextEdge.targetVertex.lastVisitForward == lastVisit)
+                        if (bestPathNodesBackward.ContainsKey(nextEdge.targetVertex.id) && cost + bestPathNodesBackward[nextEdge.targetVertex.id] < mu)
+                        {
+                            mu = cost + bestPathNodesBackward[nextEdge.targetVertex.id];
+                        }
+                    }
+                }
+                //-------------------------------------------------------------------------------------------------------
+                if (!backwardHeadIsVisited)
+                {
+                    foreach (Edge nextEdge in _graph.GetPreviousEdges(headBackward.state.vertex.id, lastVisit))
+                    {
+                        if (backwardHeadIsVisited)
+                            break;
+                        double cost = _CostEvaluation(headBackward.state.totalCostS, nextEdge.costS);
+                        _AddPriotiyQueueNode(cost, new State(cost, nextEdge.sourceVertex, headBackward.state), false);
+                        //if ((cost + headForward.cost < mu) && nextEdge.sourceVertex.visitIDbackward == lastVisit)
+                        if (bestPathNodesForward.ContainsKey(nextEdge.sourceVertex.id) && cost + bestPathNodesForward[nextEdge.sourceVertex.id] < mu)
+                        {
+                            mu = cost + bestPathNodesForward[nextEdge.sourceVertex.id];
+                        }
+                    }
+                }
             }
-            return _NoPathFound(sourceNodeID, endNodeID, Messages.NoPathFound);
+            return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NoPathFound);
         }
     }
     public class State : FastPriorityQueueNode
     {
         public double totalCostS { get; } 
-        public Node node { get; }
+        public Vertex vertex { get; }
         public State previousState { get; }
         public string roadName { get; }
         public Edge edgeToNode { get; }
-
+        //public bool isBackwardNode { get; }
 
         public State(double ptotalCost,
-                    Node pnode,
+                    Vertex pvertex,
+                    //bool pisBackwardNode = false,
                     State ppreviousState = null
                     )
         {
             totalCostS = ptotalCost;
-            node = pnode;
+            vertex = pvertex;
             previousState = ppreviousState;
+            //isBackwardNode = pisBackwardNode;
         }
     }
 
     internal struct CostWithNode
     {
         public double cost { get; }
-        public State State { get; }
+        public State state { get; }
 
         public CostWithNode(double pcost, State pstate)
         {
             cost = pcost;
-            State = pstate;
+            state = pstate;
         }
     }
 

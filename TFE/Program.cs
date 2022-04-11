@@ -58,20 +58,20 @@ namespace TFE
             
             int i = 0;
             State state = r.Value;
-            List<KeyValuePair<Node, string>> id_RoadName = new List<KeyValuePair<Node, string>>();
+            List<KeyValuePair<Vertex, string>> id_RoadName = new List<KeyValuePair<Vertex, string>>();
             
             state = r.Value;
             while (state != null)
             {
-                //id_RoadName.Add(new KeyValuePair<Node, string>(state.node, state.roadName));
+                //id_RoadName.Add(new KeyValuePair<Vertex, string>(state.vertex, state.roadName));
                 state = state.previousState;
                 i++;
             }
             /*
             id_RoadName.Reverse();
-            foreach (KeyValuePair<Node, string> nodeNroadName in id_RoadName)
+            foreach (KeyValuePair<Vertex, string> nodeNroadName in id_RoadName)
             {
-                Console.Write(" node id : " + nodeNroadName.Key.id);
+                Console.Write(" vertex id : " + nodeNroadName.Key.id);
                 Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
             }
@@ -145,11 +145,11 @@ namespace TFE
                         flag = false;
                         continue;
                     }
-                    if (graph.NodeExist(Convert.ToInt32(x[1])))
+                    if (graph.VertexExist(Convert.ToInt32(x[1])))
                     {
                         sourceNodes.Add(Convert.ToInt32(x[1]));
                     }
-                    if (graph.NodeExist(Convert.ToInt32(x[2])))
+                    if (graph.VertexExist(Convert.ToInt32(x[2])))
                     {
                         targetNodes.Add(Convert.ToInt32(x[2]));
                     }
@@ -162,19 +162,19 @@ namespace TFE
             static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
             {
                 var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
-                State state = r.Value;
+                state state = r.Value;
                 int i = 0;
                 List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
 
                 state = r.Value;
                 while (true)
                 {
-                    nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
+                    nid.Add(new KeyValuePair<int, int>(state.vertex.id, state.tag));
                     state = state.previousState;
                     i++;
                     if (state.previousState == null)
                     {
-                        nid.Add(new KeyValuePair<int, int>(state.node.id, state.tag));
+                        nid.Add(new KeyValuePair<int, int>(state.vertex.id, state.tag));
                         i++;
                         break;
                     }
