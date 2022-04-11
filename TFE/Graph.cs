@@ -41,7 +41,7 @@ namespace TFE
                     Vertex sourceNode = GetVertex(way.source, way.x1, way.y1);
                     Vertex targetNode = GetVertex(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward, way.osm_id); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
-                    SaveEdge(edge);
+                    _SaveEdge(edge);
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
                     targetNode.AddIncomingEdge(edge); // Ajout pour le reverse graph
@@ -61,10 +61,13 @@ namespace TFE
                 }
             }
         }
-        private void SaveEdge(Edge edge)
+        private void _SaveEdge(Edge edge)
         {
+            /*
             if (!_edges.ContainsKey(edge.osmId))
                 _edges.Add(edge.osmId, edge);
+            */
+            // todo : à remettre une fois fini
         }
         public bool VertexExist(int id)
         {
@@ -96,7 +99,7 @@ namespace TFE
         {
             foreach (Edge edge in GetVertex(vertexID).outgoingEdges)
             {
-                if (edge.targetVertex.lastVisitForward != visitId && edge.cost >= 0)
+                if (edge.targetVertex.lastVisitForward != visitId && edge.costS >= 0)
                 {
                     yield return edge;
                 }
@@ -106,7 +109,7 @@ namespace TFE
         {
             foreach (Edge edge in GetVertex(vertexID).incomingEdges)
             {
-                if (edge.sourceVertex.lastVisitBackward != visitId && edge.cost >= 0)
+                if (edge.sourceVertex.lastVisitBackward != visitId && edge.costS >= 0)
                 {
                     yield return edge;
                 }
@@ -116,7 +119,7 @@ namespace TFE
         {
             if (newCostS == null)
             {
-                _edges[osmId].cost = newCost;
+                _edges[osmId].costS = newCost;
             }
             else if (newCost == null)
             {
@@ -132,8 +135,8 @@ namespace TFE
         public int id { get; private set; }
         public List<Edge> outgoingEdges { get; private set; }
         public List<Edge> incomingEdges { get; private set; }
-        public double latitude { get; private set; }
-        public double longitude { get; private set; }
+        //public double latitude { get; private set; }
+        //public double longitude { get; private set; }
         public int lastVisitForward = 0;
         public int lastVisitBackward = 0;
 
@@ -142,8 +145,8 @@ namespace TFE
             id = pid;
             outgoingEdges = new List<Edge>();
             incomingEdges = new List<Edge>();
-            latitude = plat;
-            longitude = plon;
+            //latitude = plat;
+            //longitude = plon;
         }
 
         public void AddOutgoingEdge(Edge edge)
@@ -159,49 +162,49 @@ namespace TFE
             return "Vertex info :" +
                     "\n" +
                     "\n - id : " + id +
-                    "\n - latitude : " + latitude +
-                    "\n - longitude : " + longitude +
+                   // "\n - latitude : " + latitude +
+                    //"\n - longitude : " + longitude +
                     "\n";
         }
     }
 
     public class Edge
     {
-        public double? length_m { get; private set; }
-        public string roadName { get; private set; }
+        //public double? length_m { get; private set; }
+        //public string roadName { get; private set; }
         public Vertex sourceVertex { get; set; }
         public Vertex targetVertex { get; set; }
-        public double cost { get; set; }
+        //public double cost { get; set; }
         public double costS { get; set; }
-        public int maxSpeedForward { get; private set; }
-        public int osmId { get; private set; }
+        //public int maxSpeedForward { get; private set; }
+        //public int osmId { get; private set; }
 
         public Edge(double? plength_m, string proadName,
                     double pcost, double pcoastS,
                     int pmaxSpeedForward, int posmId)
         {
-            length_m = plength_m;
-            roadName = proadName;
+            //length_m = plength_m;
+            //roadName = proadName;
             sourceVertex = new Vertex(-1, 0, 0);
             targetVertex = new Vertex(-1, 0, 0);
-            cost = pcost;
+            //cost = pcost;
             costS = pcoastS;
-            maxSpeedForward = pmaxSpeedForward;
-            osmId = posmId;
+            //maxSpeedForward = pmaxSpeedForward;
+            //osmId = posmId;
         }
 
         public override string ToString()
         {
             return "edge info :" +
                     "\n" +
-                    "\n - length_m : " + length_m +
-                    "\n - roadName : " + roadName +
+                   // "\n - length_m : " + length_m +
+                    //"\n - roadName : " + roadName +
                     "\n - vertex source id : " + sourceVertex.id +
                     "\n - vertex target id : " + targetVertex.id +
-                    "\n - totalCostS : " + cost +
+                   // "\n - totalCostS : " + cost +
                     "\n - totalCostS : " + costS +
-                    "\n - maxSpeedForward : " + maxSpeedForward +
-                    "\n - osm Id : " + osmId +
+                    //"\n - maxSpeedForward : " + maxSpeedForward +
+                    //"\n - osm Id : " + osmId +
                     "\n";
         }
     }

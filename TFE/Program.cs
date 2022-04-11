@@ -15,6 +15,8 @@ namespace TFE
             //int idNodeTarget = 901419;
             int idNodeTarget = 458523; // bruge
             //int idNodeTarget = 597177;
+            idNodeSource = 708851;
+            idNodeTarget = 28072;
             Stopwatch sw = new Stopwatch();
 
             Console.WriteLine("debut du graph");
