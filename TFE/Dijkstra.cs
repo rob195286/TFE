@@ -81,6 +81,18 @@ namespace TFE
             throw new InvalidOperationException("problèmme");
             return new KeyValuePair<double, State>();
         }
+        private State _RebuildPath(State s1, State s2)
+        {
+            s2.previousState = s1;
+            State tempState = s2;
+            while (tempState.nextState != null)
+            {
+                tempState = tempState.nextState;
+                tempState.previousState = s2;
+                s2 = tempState;
+            }
+            return tempState;
+        }
         private double _CostEvaluation(double totalCostS,
                                        double costSToNextNode)
         {
@@ -99,8 +111,10 @@ namespace TFE
             _ClearQueue();
             _AddNode(0, new State(0, _graph.GetVertex(sourceVertexID)), false);
             _AddNode(0, new State(0, _graph.GetVertex(destinationVertexID)), true);
-            //_AddNode(0, new State(0, 0, 0, _graph.GetVertex(sourceVertexID)));
-            //_AddNode(0, new State(0, 0, 0, _graph.GetVertex(destinationVertexID), true));
+            /*
+            _AddNode(0, new State(0, _graph.GetVertex(sourceVertexID)), false);
+            _AddNode(0, new State(0, _graph.GetVertex(destinationVertexID)), false);
+            */
             double mu = Double.PositiveInfinity;
            // double backwardBestCost = Double.PositiveInfinity;
             while (!_QueueIsEmpty(false) && !_QueueIsEmpty(true))
@@ -109,17 +123,17 @@ namespace TFE
                 CostWithNode headBackward = _PopPriorityQueueHead(true);
                 tookNodeNumber++;
                 if (headForward.cost + headBackward.cost >= mu)
-                    return new KeyValuePair<double, State>(headForward.cost + headBackward.cost, headForward.state);
-                bool forwardVertexHasBeenVisited = headForward.state.vertex.lastVisitForward == lastVisit;    // On doit les mettre ici car après l'actualisation à l'itération acuel (liast visit) fait
-                bool backwardVertexHasBeenVisited = headBackward.state.vertex.lastVisitBackward == lastVisit; //    qu'on rentre pas dans la boucle for.
-                                
-                if (!forwardVertexHasBeenVisited)
+                    return new KeyValuePair<double, State>(headForward.cost + headBackward.cost, _RebuildPath(headForward.state, headBackward.state));
+               // bool forwardVertexHasBeenVisited = headForward.state.vertex.lastVisitForward == lastVisit;    // On doit les mettre ici car après l'actualisation à l'itération acuel (liast visit) fait
+               // bool backwardVertexHasBeenVisited = headBackward.state.vertex.lastVisitBackward == lastVisit; //    qu'on rentre pas dans la boucle for.
+               
+                if (!bestPathNodesForward.ContainsKey(headForward.state.vertex.id))//!forwardVertexHasBeenVisited)
                 {
                     headForward.state.vertex.lastVisitForward = lastVisit;
                     bestPathNodesForward.Add(headForward.state.vertex.id, headForward.cost);
                     foreach (Edge nextEdge in _graph.GetNextEdges(headForward.state.vertex.id, lastVisit)) // forward
                     {
-                        double cost = _CostEvaluation(headForward.state.totalCostS, nextEdge.costS);
+                        double cost = _CostEvaluation(headForward.cost, nextEdge.costS);
                         _AddNode(cost, new State(cost, nextEdge.targetVertex, headForward.state), false);
                         //if ((cost + headBackward.cost < mu) && nextEdge.targetVertex.lastVisitForward == lastVisit)
                         if (bestPathNodesBackward.ContainsKey(nextEdge.targetVertex.id) && cost + bestPathNodesBackward[nextEdge.targetVertex.id] < mu)
@@ -129,14 +143,14 @@ namespace TFE
                     }
                 }
                 //-------------------------------------------------------------------------------------------------------
-                if (!backwardVertexHasBeenVisited)
+                if (!bestPathNodesBackward.ContainsKey(headBackward.state.vertex.id))//!backwardVertexHasBeenVisited) 
                 {
                     headBackward.state.vertex.lastVisitBackward = lastVisit;
                     bestPathNodesBackward.Add(headBackward.state.vertex.id, headBackward.cost);
-                    foreach (Edge nextEdge in _graph.GetPreviousEdges(headBackward.state.vertex.id, lastVisit))
+                    foreach (Edge nextEdge in _graph.GetPreviousEdges(headBackward.state.vertex.id, lastVisit)) // backward
                     {
-                        double cost = _CostEvaluation(headBackward.state.totalCostS, nextEdge.costS);
-                        _AddNode(cost, new State(cost, nextEdge.sourceVertex, headBackward.state), true);
+                        double cost = _CostEvaluation(headBackward.cost, nextEdge.costS);
+                        _AddNode(cost, new State(cost, nextEdge.sourceVertex, null, headBackward.state), true);
                         //if ((cost + headForward.cost < mu) && nextEdge.sourceVertex.visitIDbackward == lastVisit)
                         if (bestPathNodesForward.ContainsKey(nextEdge.sourceVertex.id) && cost + bestPathNodesForward[nextEdge.sourceVertex.id] < mu)
                         {
@@ -144,7 +158,7 @@ namespace TFE
                         }
                     }
                 }
-
+                
                 // modifier les states
                 /*
                 if (headForward.state.totalCostSFrontward + headForward.state.totalCostSBackward >= mu)
@@ -191,21 +205,24 @@ namespace TFE
     {
         public double totalCostS { get; } 
         public Vertex vertex { get; }
-        public State previousState { get; }
+        public State previousState { get; set; }
+        public State nextState { get; set; }
        // public string roadName { get; }
         //public Edge edgeToNode { get; }
-        //public bool isBackwardNode { get; }
+        public bool isBackwardNode { get; }
 
         public State(double ptotalCost,
                     Vertex pvertex,
-                    //bool pisBackwardNode = false,
-                    State ppreviousState = null
+                    State ppreviousState = null,
+                    State pnextState = null,
+                    bool pisBackwardNode = false
                     )
         {
             totalCostS = ptotalCost;
             vertex = pvertex;
             previousState = ppreviousState;
-            //isBackwardNode = pisBackwardNode;
+            nextState = pnextState;
+            isBackwardNode = pisBackwardNode;
         }
     }
 

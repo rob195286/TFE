@@ -66,18 +66,20 @@ namespace TFE
             while (state != null)
             {
                 //id_RoadName.Add(new KeyValuePair<Vertex, string>(state.vertex, state.roadName));
+                id_RoadName.Add(new KeyValuePair<Vertex, string>(state.vertex, ""));
                 state = state.previousState;
                 i++;
             }
-            /*
+            int j = 1;
             id_RoadName.Reverse();
             foreach (KeyValuePair<Vertex, string> nodeNroadName in id_RoadName)
             {
+                Console.Write("" + j++);
                 Console.Write(" vertex id : " + nodeNroadName.Key.id);
-                Console.Write("    road name : " + nodeNroadName.Value);
+                //Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
             }
-            */
+            
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
             Console.WriteLine("cost : " + r.Key);
