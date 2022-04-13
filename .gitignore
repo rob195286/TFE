@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /ways.csv
 /routablePointFromDB.csv
+/path.csv

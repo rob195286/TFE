@@ -10,6 +10,7 @@ namespace TFE
     public class Graph
     {
         private Dictionary<int, Vertex> _vertices;
+        private Dictionary<int, Vertex> _reversedVertices;
         private Dictionary<int, Edge> _edges;
 
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
@@ -27,7 +28,8 @@ namespace TFE
             }
             else
             {
-                return new Vertex(id, lon, lat);
+                AddVertex(new Vertex(id, lon, lat));
+                return GetVertex(id);
             }
         }
         private void CreateGraph(string filePath)
@@ -38,26 +40,26 @@ namespace TFE
                 csv.Context.TypeConverterOptionsCache.GetOptions<double?>().NullValues.Add("NULL");
                 foreach (CSVwayData way in csv.GetRecords<CSVwayData>())
                 {
-                    Vertex sourceNode = GetVertex(way.source, way.x1, way.y1);
-                    Vertex targetNode = GetVertex(way.target, way.x2, way.y2);
+                    Vertex sourceVertex = GetVertex(way.source, way.x1, way.y1);
+                    Vertex targetVertex = GetVertex(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward, way.osm_id); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                     _SaveEdge(edge);
                     //------------------------------- one way
-                    sourceNode.AddOutgoingEdge(edge);
-                    targetNode.AddIncomingEdge(edge); // Ajout pour le reverse graph
-                    edge.sourceVertex = sourceNode;
-                    edge.targetVertex = targetNode;
+                    sourceVertex.AddOutgoingEdge(edge);
+                    targetVertex.AddIncomingEdge(edge); // Ajout pour le reverse graph
+                    edge.sourceVertex = sourceVertex;
+                    edge.targetVertex = targetVertex;
                     //------------------------------- two way
                     if (way.one_way == 2 || way.one_way == 0)
                     {
                         edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s ?? 999999, way.maxspeed_backward, way.osm_id);
-                        targetNode.AddOutgoingEdge(edge);
-                        sourceNode.AddIncomingEdge(edge); // Ajout pour le reverse graph
-                        edge.sourceVertex = targetNode;
-                        edge.targetVertex = sourceNode;
+                        targetVertex.AddOutgoingEdge(edge);
+                        sourceVertex.AddIncomingEdge(edge); // Ajout pour le reverse graph
+                        edge.sourceVertex = targetVertex;
+                        edge.targetVertex = sourceVertex;
                     }
-                    AddVertex(sourceNode);
-                    AddVertex(targetNode);
+                   // AddVertex(sourceVertex);
+                   // AddVertex(targetVertex);
                 }
             }
         }
@@ -162,6 +164,8 @@ namespace TFE
             return "Vertex info :" +
                     "\n" +
                     "\n - id : " + id +
+                    "\n - visited F : " + lastVisitForward +
+                    "\n - visited B : " + lastVisitBackward +
                    // "\n - latitude : " + latitude +
                     //"\n - longitude : " + longitude +
                     "\n";

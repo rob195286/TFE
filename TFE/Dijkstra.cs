@@ -14,7 +14,7 @@ namespace TFE
         public int totalNumberOfnodes;
         public int tookNodeNumber;
 
-        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000/2)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000*2/2)
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
@@ -83,7 +83,7 @@ namespace TFE
         }
         private State _RebuildPath(State s1, State s2)
         {
-            s2.previousState = s1;
+            s2.previousState = s1; // On fait une union entre le chemin de l'avant (s1) et le premier noeud du second chemin (s2).
             State tempState = s2;
             while (tempState.nextState != null)
             {
@@ -103,100 +103,79 @@ namespace TFE
 
         public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int destinationVertexID)
         {
-            Dictionary<int, double> bestPathNodesForward = new Dictionary<int, double>();
-            Dictionary<int, double> bestPathNodesBackward = new Dictionary<int, double>();
+            Dictionary<int, State> bestPathNodesForward = new Dictionary<int, State>();
+            Dictionary<int, State> bestPathNodesBackward = new Dictionary<int, State>();
             if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(destinationVertexID)) 
                 return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisit++;
             _ClearQueue();
             _AddNode(0, new State(0, _graph.GetVertex(sourceVertexID)), false);
-            _AddNode(0, new State(0, _graph.GetVertex(destinationVertexID)), true);
-            /*
-            _AddNode(0, new State(0, _graph.GetVertex(sourceVertexID)), false);
-            _AddNode(0, new State(0, _graph.GetVertex(destinationVertexID)), false);
-            */
+            _AddNode(0, new State(0, _graph.GetVertex(destinationVertexID)), true);           
             double mu = Double.PositiveInfinity;
-           // double backwardBestCost = Double.PositiveInfinity;
-            while (!_QueueIsEmpty(false) && !_QueueIsEmpty(true))
+            State lastStateFrontward = null;
+            State lastStateBackward = null;
+            // double backwardBestCost = Double.PositiveInfinity;
+            int x = 5;
+            while (!_QueueIsEmpty(true) && !_QueueIsEmpty(false))
             {
                 CostWithNode headForward = _PopPriorityQueueHead(false);
                 CostWithNode headBackward = _PopPriorityQueueHead(true);
+                if (headForward.state.getVertexID == 866027)
+                    x = 5;
+                if (headBackward.state.getVertexID == 866027)
+                    x = 5;
                 tookNodeNumber++;
                 if (headForward.cost + headBackward.cost >= mu)
+                    //return new KeyValuePair<double, State>(lastStateFrontward.totalCostS + lastStateBackward.totalCostS, _RebuildPath(lastStateFrontward, lastStateFrontward));
                     return new KeyValuePair<double, State>(headForward.cost + headBackward.cost, _RebuildPath(headForward.state, headBackward.state));
-               // bool forwardVertexHasBeenVisited = headForward.state.vertex.lastVisitForward == lastVisit;    // On doit les mettre ici car après l'actualisation à l'itération acuel (liast visit) fait
-               // bool backwardVertexHasBeenVisited = headBackward.state.vertex.lastVisitBackward == lastVisit; //    qu'on rentre pas dans la boucle for.
-               
-                if (!bestPathNodesForward.ContainsKey(headForward.state.vertex.id))//!forwardVertexHasBeenVisited)
-                {
-                    headForward.state.vertex.lastVisitForward = lastVisit;
-                    bestPathNodesForward.Add(headForward.state.vertex.id, headForward.cost);
+                bool forwardVertexHasBeenVisited = headForward.state.vertex.lastVisitForward == lastVisit;    // On doit les mettre ici car après l'actualisation à l'itération acuel (liast visit) fait
+                bool backwardVertexHasBeenVisited = headBackward.state.vertex.lastVisitBackward == lastVisit; //    qu'on rentre pas dans la boucle for. 
+                headForward.state.vertex.lastVisitForward = lastVisit;
+                headBackward.state.vertex.lastVisitBackward = lastVisit;
+                
+                if (forwardVertexHasBeenVisited)
+                    bestPathNodesForward[headForward.state.getVertexID] = headForward.state;
+                else
+                    bestPathNodesForward.Add(headForward.state.getVertexID, headForward.state);
+                if (backwardVertexHasBeenVisited)
+                    bestPathNodesBackward[headBackward.state.getVertexID] = headBackward.state;
+                else
+                    bestPathNodesBackward.Add(headBackward.state.getVertexID, headBackward.state);
+
+
+                if (!forwardVertexHasBeenVisited)
+                {                   
                     foreach (Edge nextEdge in _graph.GetNextEdges(headForward.state.vertex.id, lastVisit)) // forward
                     {
+                        if (nextEdge.targetVertex.id == 866027)
+                            x = 5;
                         double cost = _CostEvaluation(headForward.cost, nextEdge.costS);
                         _AddNode(cost, new State(cost, nextEdge.targetVertex, headForward.state), false);
                         //if ((cost + headBackward.cost < mu) && nextEdge.targetVertex.lastVisitForward == lastVisit)
-                        if (bestPathNodesBackward.ContainsKey(nextEdge.targetVertex.id) && cost + bestPathNodesBackward[nextEdge.targetVertex.id] < mu)
+                        if (bestPathNodesBackward.ContainsKey(nextEdge.targetVertex.id) && cost + bestPathNodesBackward[nextEdge.targetVertex.id].totalCostS < mu)
                         {
-                            mu = cost + bestPathNodesBackward[nextEdge.targetVertex.id];
+                            mu = cost + bestPathNodesBackward[nextEdge.targetVertex.id].totalCostS;
+                            lastStateFrontward = headForward.state;
                         }
                     }
-                }
+                }                
                 //-------------------------------------------------------------------------------------------------------
-                if (!bestPathNodesBackward.ContainsKey(headBackward.state.vertex.id))//!backwardVertexHasBeenVisited) 
-                {
-                    headBackward.state.vertex.lastVisitBackward = lastVisit;
-                    bestPathNodesBackward.Add(headBackward.state.vertex.id, headBackward.cost);
+                if (!backwardVertexHasBeenVisited) 
+                {                   
                     foreach (Edge nextEdge in _graph.GetPreviousEdges(headBackward.state.vertex.id, lastVisit)) // backward
                     {
+                        if (nextEdge.sourceVertex.id == 866027)
+                            x = 5;
                         double cost = _CostEvaluation(headBackward.cost, nextEdge.costS);
                         _AddNode(cost, new State(cost, nextEdge.sourceVertex, null, headBackward.state), true);
                         //if ((cost + headForward.cost < mu) && nextEdge.sourceVertex.visitIDbackward == lastVisit)
-                        if (bestPathNodesForward.ContainsKey(nextEdge.sourceVertex.id) && cost + bestPathNodesForward[nextEdge.sourceVertex.id] < mu)
+                        if (bestPathNodesForward.ContainsKey(nextEdge.sourceVertex.id) && cost + bestPathNodesForward[nextEdge.sourceVertex.id].totalCostS < mu)
                         {
-                            mu = cost + bestPathNodesForward[nextEdge.sourceVertex.id];
+                            mu = cost + bestPathNodesForward[nextEdge.sourceVertex.id].totalCostS;
+                            lastStateBackward = headBackward.state;
                         }
                     }
                 }
-                
-                // modifier les states
-                /*
-                if (headForward.state.totalCostSFrontward + headForward.state.totalCostSBackward >= mu)
-                    return new KeyValuePair<double, State>(headForward.state.totalCostSFrontward + headForward.state.totalCostSBackward, headForward.state); // modifier les states
-
-                if (headForward.state.vertex.lastVisitForward == lastVisit)
-                    continue;
-
-                if (headForward.state.isBackwardNode) // backward
-                {
-                    headForward.state.vertex.visitIDbackward = lastVisit;
-                    foreach (Edge nextEdge in _graph.GetPreviousEdges(headForward.state.vertex.id, lastVisit))
-                    {
-                        double cost = _CostEvaluation(headForward.state.totalCostS, nextEdge.costS);
-                        _AddNode(cost, new State(cost, cost, headForward.state.totalCostSFrontward, nextEdge.sourceVertex, true, headForward.state));
-                        if (headForward.state.vertex.lastVisitForward == lastVisit && nextEdge.targetVertex.lastVisitForward == lastVisit)
-                            mu = cost + headForward.state.totalCostSFrontward;
-                    }
-                }
-                else // forward
-                {
-                    headForward.state.vertex.lastVisitForward = lastVisit;                    
-                    foreach (Edge nextEdge in _graph.GetNextEdges(headForward.state.vertex.id, lastVisit))
-                    {
-                        double cost = _CostEvaluation(headForward.state.totalCostS, nextEdge.costS);
-                        _AddNode(cost, new State(cost, headForward.state.totalCostSBackward, cost, nextEdge.targetVertex, false, headForward.state));
-                        if (headForward.state.vertex.lastVisitForward == lastVisit && nextEdge.targetVertex.lastVisitForward == lastVisit)
-                            mu = cost + headForward.state.totalCostSBackward;
-                        //if (headForward.state.vertex.lastVisitForward == lastVisit && nextEdge.targetVertex.visitIDbackward == lastVisit)
-                         //   mu = cost + backwardBestCost;
-                    }
-                }
-                */
-
-
-
-                // _ExtendNodesToVisit(headForward, headBackward, mu, false);
-                //_ExtendNodesToVisit(headForward, headBackward, mu, true);
             }
             return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NoPathFound);
         }
@@ -207,22 +186,26 @@ namespace TFE
         public Vertex vertex { get; }
         public State previousState { get; set; }
         public State nextState { get; set; }
+        public int getVertexID
+        {
+            get { return vertex.id;  }
+        }
        // public string roadName { get; }
         //public Edge edgeToNode { get; }
-        public bool isBackwardNode { get; }
+       // public bool isBackwardNode { get; }
 
         public State(double ptotalCost,
                     Vertex pvertex,
                     State ppreviousState = null,
-                    State pnextState = null,
-                    bool pisBackwardNode = false
+                    State pnextState = null
+                    //bool pisBackwardNode = false
                     )
         {
             totalCostS = ptotalCost;
             vertex = pvertex;
             previousState = ppreviousState;
             nextState = pnextState;
-            isBackwardNode = pisBackwardNode;
+            //isBackwardNode = pisBackwardNode;
         }
     }
 

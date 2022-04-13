@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 
 namespace TFE
@@ -15,71 +16,56 @@ namespace TFE
             //int idNodeTarget = 901419;
             int idNodeTarget = 458523; // bruge
             //int idNodeTarget = 597177;
-            idNodeSource = 708851;
-            idNodeTarget = 28072;
+            //idNodeSource = 708851;
+            //idNodeTarget = 28072;
             Stopwatch sw = new Stopwatch();
 
             Console.WriteLine("debut du graph");
+            sw.Start();
             Graph g = new Graph();
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
             Console.WriteLine("fin du graph");
 
-            //printRoadNameEquality(g, idNodeSource, idNodeTarget);
-           
+            Dijkstra dijkstra = new Dijkstra(g);
+            CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
+
             sw.Start();
-            dijkstra(g, idNodeSource, idNodeTarget);
+            //Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-            /*
-            List<int> sourceNodes = new List<int>();
-            List<int> targetNodes = new List<int>();
-            using (TextFieldParser parser = new TextFieldParser(@"routablePointFromDB.csv"))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(",");
-                bool flag = true;
-                while (!parser.EndOfData)
-                {
-                    var x = parser.ReadFields();
-                    if (flag)
-                    {
-                        flag = false;
-                        continue;
-                    }
-                    sourceNodes.Add(Convert.ToInt32(x[0]));
-                    targetNodes.Add(Convert.ToInt32(x[1]));
-                }
-            }
-            */
+
             //LaunchDijkstraBenchmart(g);
         }
 
-        static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
+        static void Dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget)
         {
-            var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
+            var r = d.ComputeShortestPath(idNodeSource, idNodeTarget);
             
             int i = 0;
             State state = r.Value;
-            List<KeyValuePair<Vertex, string>> id_RoadName = new List<KeyValuePair<Vertex, string>>();
+            List<KeyValuePair<Vertex, double>> vertexWithCostPAth = new List<KeyValuePair<Vertex, double>>();
             
             state = r.Value;
             while (state != null)
             {
-                //id_RoadName.Add(new KeyValuePair<Vertex, string>(state.vertex, state.roadName));
-                id_RoadName.Add(new KeyValuePair<Vertex, string>(state.vertex, ""));
+                vertexWithCostPAth.Add(new KeyValuePair<Vertex, double>(state.vertex, state.totalCostS));
                 state = state.previousState;
                 i++;
             }
+            /*
             int j = 1;
-            id_RoadName.Reverse();
-            foreach (KeyValuePair<Vertex, string> nodeNroadName in id_RoadName)
+            vertexWithCostPAth.Reverse();
+            foreach (KeyValuePair<Vertex, double> nodeNroadName in vertexWithCostPAth)
             {
                 Console.Write("" + j++);
                 Console.Write(" vertex id : " + nodeNroadName.Key.id);
+                //Console.Write(" total cost : " + nodeNroadName.Value);
                 //Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
             }
-            
+            */
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
             Console.WriteLine("cost : " + r.Key);
@@ -160,7 +146,56 @@ namespace TFE
                 }
             }
         }
+        static void CompareVertexId(Dijkstra d, int idNodeSource, int idNodeTarget, string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
+        {
+            var r = d.ComputeShortestPath(idNodeSource, idNodeTarget);
+            State state = r.Value;
+            //List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
+            List<KeyValuePair<int, double>> listVid = new List<KeyValuePair<int, double>>();
 
+            state = r.Value;
+            while (true)
+            {
+                listVid.Add(new KeyValuePair<int, double>(state.vertex.id, state.totalCostS));
+                state = state.previousState;
+                if (state.previousState == null)
+                {
+                    listVid.Add(new KeyValuePair<int, double>(state.vertex.id, state.totalCostS));
+                    break;
+                }
+            }
+            listVid.Reverse();
+            using (TextFieldParser parser = new TextFieldParser(@pathFile))
+            {
+                NumberFormatInfo provider = new NumberFormatInfo();
+                provider.NumberDecimalSeparator = ".";
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
+                int j = 0;
+                bool isOk = true;
+                bool flag = true;
+                while (!parser.EndOfData)
+                {                    
+                    var x = parser.ReadFields();
+                    if (flag)                    {
+                        flag = false;
+                        continue;                    }
+                    int csvid = Convert.ToInt32(x[0]);
+                    var csvid22222 = Convert.ToDouble(x[1], provider);
+                    var vID = listVid[j++];
+                    if (vID.Key != csvid)
+                        isOk = false;
+                    Console.Write("csvid : " + csvid + " || id : " + vID.Key + " -> == " + (csvid == vID.Key));
+                    //Console.Write("             csvid : " + csvid22222 + "|| id : " + vID.Value + " -> == " + (vID.Value == csvid22222));
+                    Console.WriteLine();
+                    if (csvid != vID.Key)
+                    {
+                        Console.WriteLine(" //////////////////////////////////");
+                    }
+                }
+                Console.WriteLine("is ok :" + isOk);
+            }
+        }
 
             /*
             static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
