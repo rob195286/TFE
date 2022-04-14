@@ -16,8 +16,8 @@ namespace TFE
             //int idNodeTarget = 901419;
             int idNodeTarget = 458523; // bruge
             //int idNodeTarget = 597177;
-            //idNodeSource = 708851;
-            //idNodeTarget = 28072;
+            idNodeSource = 121155;
+            idNodeTarget = 458523;
             Stopwatch sw = new Stopwatch();
 
             Console.WriteLine("debut du graph");
@@ -31,7 +31,7 @@ namespace TFE
             CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
 
             sw.Start();
-            //Dijkstra(dijkstra, idNodeSource, idNodeTarget);
+            Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
@@ -150,19 +150,12 @@ namespace TFE
         {
             var r = d.ComputeShortestPath(idNodeSource, idNodeTarget);
             State state = r.Value;
-            //List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
             List<KeyValuePair<int, double>> listVid = new List<KeyValuePair<int, double>>();
 
-            state = r.Value;
-            while (true)
+            while (state != null)
             {
                 listVid.Add(new KeyValuePair<int, double>(state.vertex.id, state.totalCostS));
-                state = state.previousState;
-                if (state.previousState == null)
-                {
-                    listVid.Add(new KeyValuePair<int, double>(state.vertex.id, state.totalCostS));
-                    break;
-                }
+                state = state.previousState;                
             }
             listVid.Reverse();
             using (TextFieldParser parser = new TextFieldParser(@pathFile))
