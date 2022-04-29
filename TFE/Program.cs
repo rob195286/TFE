@@ -24,14 +24,14 @@ namespace TFE
             //printRoadNameEquality(g, idNodeSource, idNodeTarget);
            
             sw.Start();
-            dijkstra(g, idNodeSource, idNodeTarget);
+            //dijkstra(g, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-            /*
+            
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
-            using (TextFieldParser parser = new TextFieldParser(@"routablePointFromDB.csv"))
+            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\routablePointFromDB.csv"))
             {
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(",");
@@ -60,7 +60,7 @@ namespace TFE
             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds/1000);
-            */
+            
         }
 
         static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
@@ -96,7 +96,7 @@ namespace TFE
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\stage\banchmark\Dijkstra_performances.txt"))
+            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\Bidir_Dijkstra_performances.txt"))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
                 {
@@ -113,6 +113,8 @@ namespace TFE
                     stream.WriteLine("{");
                     stream.WriteLine(string.Format("    temps de calcul ms/s : {0:F10} ms -> {1:F10} s", sw.ElapsedMilliseconds, sw.ElapsedMilliseconds / 1000));
                     stream.WriteLine("    nombre de routage : " + numberOfRoutage);
+                    stream.WriteLine("    nombre de noeud total prit : " + dj.totalNumberOfnodes);
+                    stream.WriteLine("    nombre de noeud prit de la pq : " + dj.tookNodeNumber);
                     stream.WriteLine("}");
                 }
                 stream.Close();

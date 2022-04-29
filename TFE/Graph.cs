@@ -11,7 +11,7 @@ namespace TFE
     {
         private Dictionary<int, Node> _nodes;
 
-        public Graph(string filePath = "ways.csv")
+        public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             _nodes = new Dictionary<int, Node>() { };
             CreateGraph(filePath);

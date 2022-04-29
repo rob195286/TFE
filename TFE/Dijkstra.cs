@@ -8,7 +8,8 @@ namespace TFE
         private FastPriorityQueue<PriorityQueueNode> _queue = new FastPriorityQueue<PriorityQueueNode>(2000); // fast priority queue
         private Graph _graph;
         public int lastVisitID = 0;
-        public int numberOfnodes = 0;
+        public int totalNumberOfnodes;
+        public int tookNodeNumber;
 
         public Dijkstra(Graph graph)
         {
@@ -23,7 +24,8 @@ namespace TFE
 
         private void AddNode(double cost, State state)
         {
-            _queue.Enqueue(new PriorityQueueNode(cost, state), (float)cost);  
+            _queue.Enqueue(new PriorityQueueNode(cost, state), (float)cost);
+            totalNumberOfnodes++;
         }
         private void ClearQueue()
         {
@@ -43,9 +45,12 @@ namespace TFE
             lastVisitID++;
             ClearQueue();
             AddNode(0, new State(0, _graph.GetNode(sourceNodeID)));
+            tookNodeNumber = 0;
+            totalNumberOfnodes = 0;
             while (!QueueIsEmpty())
             {
                 var bestNodeAndCost = PopNextItem();
+                tookNodeNumber++;
                 if (bestNodeAndCost.Value.node.VisitID == lastVisitID) continue;
                 if (bestNodeAndCost.Value.node.id != targetNodeID) bestNodeAndCost.Value.node.VisitID = lastVisitID;
                 if (bestNodeAndCost.Value.node.id == targetNodeID) return new KeyValuePair<double, State>(bestNodeAndCost.Key, bestNodeAndCost.Value);
