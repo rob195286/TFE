@@ -102,6 +102,8 @@ namespace TFE
             double mu = double.PositiveInfinity;
             State lastBestStateForward = null;
             State lastBestStateBackward = null;
+            tookNodeNumber = 0;
+            totalNumberOfnodes = 0;
             //------------------------------------------------------------------------------------------------- Début de l'algorithme.
             while (!_QueueIsEmpty(true) && !_QueueIsEmpty(false))
             {                

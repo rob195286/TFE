@@ -31,11 +31,11 @@ namespace TFE
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
             
-            LaunchDijkstraBenchmart(g);
-            LaunchDijkstraBenchmart(g);
-            LaunchDijkstraBenchmart(g);
-            LaunchDijkstraBenchmart(g);
-            LaunchDijkstraBenchmart(g);
+            LaunchDijkstraBenchmart(g, 50);
+            LaunchDijkstraBenchmart(g, 100);
+            LaunchDijkstraBenchmart(g, 250);
+            LaunchDijkstraBenchmart(g, 500);
+            LaunchDijkstraBenchmart(g, 1000);
         }
 
         static void Dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget)
@@ -69,21 +69,21 @@ namespace TFE
             Console.WriteLine("i : " + i);
             Console.WriteLine("cost : " + r.Key);
         }
-        static void LaunchDijkstraBenchmart(Graph g)
+        static void LaunchDijkstraBenchmart(Graph g, int routageNumber)
         {
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
             FindRoutablePoint(g, sourceNodes, targetNodes);
 
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, routageNumber);
 
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, routageNumber);
 
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, routageNumber);
 
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, routageNumber);
 
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, routageNumber);
         }
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage)
         {
@@ -91,7 +91,7 @@ namespace TFE
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\Dijkstra_performances.txt"))
+            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\BiDir_Dijkstra_performances.txt"))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
                 {
