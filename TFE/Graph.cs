@@ -62,11 +62,8 @@ namespace TFE
         }
         private void _SaveEdge(Edge edge)
         {
-            /*
             if (!_edges.ContainsKey(edge.osmId))
                 _edges.Add(edge.osmId, edge);
-            */
-            // todo : à remettre une fois fini
         }
         public bool VertexExist(int id)
         {
@@ -131,12 +128,11 @@ namespace TFE
 
     public class Vertex
     {
-        // todo : remettre données
         public int id { get; private set; }
         public List<Edge> outgoingEdges { get; private set; }
         public List<Edge> reverseOutgoingEdges { get; private set; }
-        //public double latitude { get; private set; }
-        //public double longitude { get; private set; }
+        public double latitude { get; private set; }
+        public double longitude { get; private set; }
         public int lastVisitForward = 0;
         public int lastVisitBackward = 0;
 
@@ -164,34 +160,27 @@ namespace TFE
                     "\n - id : " + id +
                     "\n - visited F : " + lastVisitForward +
                     "\n - visited B : " + lastVisitBackward +
-                   // "\n - latitude : " + latitude +
-                    //"\n - longitude : " + longitude +
+                    "\n - latitude : " + latitude +
+                    "\n - longitude : " + longitude +
                     "\n";
         }
     }
 
     public class Edge
     {
-        // todo : enlever inutile
-        //public double? length_m { get; private set; }
         public Vertex sourceVertex { get; set; }
         public Vertex targetVertex { get; set; }
-        //public double cost { get; set; }
+        public double cost { get; set; }
         public double costS { get; set; }
-        //public int maxSpeedForward { get; private set; }
         public int osmId { get; private set; }
 
         public Edge(double? plength_m, string proadName,
                     double pcost, double pcoastS,
                     int pmaxSpeedForward, int posmId)
         {
-            //length_m = plength_m;
-            //roadName = proadName;
             sourceVertex = new Vertex(-1, 0, 0);
             targetVertex = new Vertex(-1, 0, 0);
-            //cost = pcost;
             costS = pcoastS;
-            //maxSpeedForward = pmaxSpeedForward;
             osmId = posmId;
         }
 
@@ -199,13 +188,10 @@ namespace TFE
         {
             return "edge info :" +
                     "\n" +
-                   // "\n - length_m : " + length_m +
-                    //"\n - roadName : " + roadName +
                     "\n - vertex source id : " + sourceVertex.id +
                     "\n - vertex target id : " + targetVertex.id +
-                   // "\n - totalCostS : " + cost +
+                    "\n - totalCostS : " + cost +
                     "\n - totalCostS : " + costS +
-                    //"\n - maxSpeedForward : " + maxSpeedForward +
                     "\n - osm Id : " + osmId +
                     "\n";
         }

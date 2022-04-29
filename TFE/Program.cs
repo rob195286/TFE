@@ -13,11 +13,6 @@ namespace TFE
         {
             int idNodeSource = 589961; // arlon
             int idNodeTarget = 458523; // bruge
-            //idNodeTarget = 597177;
-            //idNodeSource = 121155;
-            //idNodeTarget = 901419;
-            idNodeSource = 41527;
-            idNodeTarget = 636380;
             Stopwatch sw = new Stopwatch();
 
             Console.WriteLine("debut du graph");
@@ -28,21 +23,19 @@ namespace TFE
             Console.WriteLine("fin du graph");
 
             Dijkstra dijkstra = new Dijkstra(g);
-            //Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             Console.WriteLine("------------------------------------------------------------------");
             //CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
-
             sw.Start();
-            Dijkstra(dijkstra, idNodeSource, idNodeTarget);
+            //Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-            /*
+            
             LaunchDijkstraBenchmart(g);
             LaunchDijkstraBenchmart(g);
             LaunchDijkstraBenchmart(g);
             LaunchDijkstraBenchmart(g);
-            LaunchDijkstraBenchmart(g);*/
+            LaunchDijkstraBenchmart(g);
         }
 
         static void Dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget)
@@ -174,21 +167,20 @@ namespace TFE
                 while (!parser.EndOfData)
                 {                    
                     var x = parser.ReadFields();
-                    if (flag)                    {
+                    if (flag){
                         flag = false;
-                        continue;                    }
+                        continue;
+                    }
                     int csvid = Convert.ToInt32(x[0]);
-                    var csvid22222 = Convert.ToDouble(x[1], provider);
+                    //var csvid22222 = Convert.ToDouble(x[1], provider);
                     var vID = listVid[j++];
                     if (vID.Key != csvid)
                         isOk = false;
                     Console.Write("csvid : " + csvid + " || id : " + vID.Key + " -> == " + (csvid == vID.Key));
                     //Console.Write("             csvid : " + csvid22222 + "|| id : " + vID.Value + " -> == " + (vID.Value == csvid22222));
                     Console.WriteLine();
-                    if (csvid != vID.Key)
-                    {
+                    if (!isOk)
                         Console.WriteLine(" //////////////////////////////////");
-                    }
                 }
                 Console.WriteLine("is ok :" + isOk);
             }
