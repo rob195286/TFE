@@ -10,29 +10,28 @@ namespace TFE
     public class Graph
     {
         private Dictionary<int, Vertex> _vertices;
-        private Dictionary<int, Vertex> _reversedVertices;
         private Dictionary<int, Edge> _edges;
 
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             _vertices = new Dictionary<int, Vertex>() { };
             _edges = new Dictionary<int, Edge>() { };
-            CreateGraph(filePath);
+            _CreateGraph(filePath);
         }
 
-        private Vertex GetVertex(int id, double lon, double lat)
+        private Vertex _GetVertex(int id, double lon, double lat)
         {
             if (VertexExist(id))
             {
-                return GetVertex(id);
+                return _GetVertex(id);
             }
             else
             {
                 AddVertex(new Vertex(id, lon, lat));
-                return GetVertex(id);
+                return _GetVertex(id);
             }
         }
-        private void CreateGraph(string filePath)
+        private void _CreateGraph(string filePath)
         {
             using (var reader = new StreamReader(filePath))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
@@ -40,13 +39,13 @@ namespace TFE
                 csv.Context.TypeConverterOptionsCache.GetOptions<double?>().NullValues.Add("NULL");
                 foreach (CSVwayData way in csv.GetRecords<CSVwayData>())
                 {
-                    Vertex sourceVertex = GetVertex(way.source, way.x1, way.y1);
-                    Vertex targetVertex = GetVertex(way.target, way.x2, way.y2);
+                    Vertex sourceVertex = _GetVertex(way.source, way.x1, way.y1);
+                    Vertex targetVertex = _GetVertex(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward, way.osm_id); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                     _SaveEdge(edge);
                     //------------------------------- one way
                     sourceVertex.AddOutgoingEdge(edge);
-                    targetVertex.AddIncomingEdge(edge); // Ajout pour le reverse graph
+                    targetVertex.AddReverseOutgoingEdge(edge); // Ajout pour le reverse graph
                     edge.sourceVertex = sourceVertex;
                     edge.targetVertex = targetVertex;
                     //------------------------------- two way
@@ -54,12 +53,10 @@ namespace TFE
                     {
                         edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s ?? 999999, way.maxspeed_backward, way.osm_id);
                         targetVertex.AddOutgoingEdge(edge);
-                        sourceVertex.AddIncomingEdge(edge); // Ajout pour le reverse graph
+                        sourceVertex.AddReverseOutgoingEdge(edge); // Ajout pour le reverse graph
                         edge.sourceVertex = targetVertex;
                         edge.targetVertex = sourceVertex;
                     }
-                   // AddVertex(sourceVertex);
-                   // AddVertex(targetVertex);
                 }
             }
         }
@@ -84,7 +81,7 @@ namespace TFE
             }
             return false;
         }
-        public Vertex GetVertex(int vertexID)
+        public Vertex _GetVertex(int vertexID)
         {
             Vertex node = null; // todo : voir comment gére exception
             try
@@ -99,7 +96,7 @@ namespace TFE
         }
         public IEnumerable<Edge> GetNextEdges(int vertexID, int visitId)
         {
-            foreach (Edge edge in GetVertex(vertexID).outgoingEdges)
+            foreach (Edge edge in _GetVertex(vertexID).outgoingEdges)
             {
                 if (edge.targetVertex.lastVisitForward != visitId && edge.costS >= 0)
                 {
@@ -109,7 +106,7 @@ namespace TFE
         }   
         public IEnumerable<Edge> GetPreviousEdges(int vertexID, int visitId)
         {
-            foreach (Edge edge in GetVertex(vertexID).incomingEdges)
+            foreach (Edge edge in _GetVertex(vertexID).reverseOutgoingEdges)
             {
                 if (edge.sourceVertex.lastVisitBackward != visitId && edge.costS >= 0)
                 {
@@ -134,9 +131,10 @@ namespace TFE
 
     public class Vertex
     {
+        // todo : remettre données
         public int id { get; private set; }
         public List<Edge> outgoingEdges { get; private set; }
-        public List<Edge> incomingEdges { get; private set; }
+        public List<Edge> reverseOutgoingEdges { get; private set; }
         //public double latitude { get; private set; }
         //public double longitude { get; private set; }
         public int lastVisitForward = 0;
@@ -146,7 +144,7 @@ namespace TFE
         {
             id = pid;
             outgoingEdges = new List<Edge>();
-            incomingEdges = new List<Edge>();
+            reverseOutgoingEdges = new List<Edge>();
             //latitude = plat;
             //longitude = plon;
         }
@@ -155,9 +153,9 @@ namespace TFE
         {
             outgoingEdges.Add(edge);
         }
-        public void AddIncomingEdge(Edge edge)
+        public void AddReverseOutgoingEdge(Edge edge)
         {
-            incomingEdges.Add(edge);
+            reverseOutgoingEdges.Add(edge);
         }
         public override string ToString()
         {
@@ -174,14 +172,14 @@ namespace TFE
 
     public class Edge
     {
+        // todo : enlever inutile
         //public double? length_m { get; private set; }
-        //public string roadName { get; private set; }
         public Vertex sourceVertex { get; set; }
         public Vertex targetVertex { get; set; }
         //public double cost { get; set; }
         public double costS { get; set; }
         //public int maxSpeedForward { get; private set; }
-        //public int osmId { get; private set; }
+        public int osmId { get; private set; }
 
         public Edge(double? plength_m, string proadName,
                     double pcost, double pcoastS,
@@ -194,7 +192,7 @@ namespace TFE
             //cost = pcost;
             costS = pcoastS;
             //maxSpeedForward = pmaxSpeedForward;
-            //osmId = posmId;
+            osmId = posmId;
         }
 
         public override string ToString()
@@ -208,7 +206,7 @@ namespace TFE
                    // "\n - totalCostS : " + cost +
                     "\n - totalCostS : " + costS +
                     //"\n - maxSpeedForward : " + maxSpeedForward +
-                    //"\n - osm Id : " + osmId +
+                    "\n - osm Id : " + osmId +
                     "\n";
         }
     }

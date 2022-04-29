@@ -47,6 +47,10 @@ namespace TestTFE.UnitTests
             {
                 Assert.AreEqual(true, new List<int>() { 74525, 201346, 694765, 694762, 694763, 694764, 727950 }.Contains(edge.targetVertex.id));
             }
+            foreach (Edge edge in graph.GetNextEdges(34152, -1))
+            {
+                Assert.AreEqual(true, new List<int>() { 34151, 789798 }.Contains(edge.targetVertex.id));
+            }
         }
 
         [TestMethod]
@@ -71,7 +75,11 @@ namespace TestTFE.UnitTests
             foreach (Edge edge in graph.GetPreviousEdges(270371, -1))
             {
                 Assert.AreEqual(true, new List<int>() { 272413, 521289, 555355, 752449, 272415, 561497 }.Contains(edge.sourceVertex.id));
-            }            
+            }
+            foreach (Edge edge in graph.GetPreviousEdges(34152, -1))
+            {
+                Assert.AreEqual(true, new List<int>() { 789764 }.Contains(edge.sourceVertex.id));
+            }
         }
     }
 }

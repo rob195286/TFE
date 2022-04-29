@@ -11,13 +11,13 @@ namespace TFE
     {
         static void Main(string[] args)
         {
-            //int idNodeSource = 121155;
             int idNodeSource = 589961; // arlon
-            //int idNodeTarget = 901419;
             int idNodeTarget = 458523; // bruge
-            //int idNodeTarget = 597177;
-            idNodeSource = 121155;
-            idNodeTarget = 458523;
+            //idNodeTarget = 597177;
+            //idNodeSource = 121155;
+            //idNodeTarget = 901419;
+            idNodeSource = 41527;
+            idNodeTarget = 636380;
             Stopwatch sw = new Stopwatch();
 
             Console.WriteLine("debut du graph");
@@ -28,15 +28,21 @@ namespace TFE
             Console.WriteLine("fin du graph");
 
             Dijkstra dijkstra = new Dijkstra(g);
-            CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
+            //Dijkstra(dijkstra, idNodeSource, idNodeTarget);
+            Console.WriteLine("------------------------------------------------------------------");
+            //CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
 
             sw.Start();
             Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-
-            //LaunchDijkstraBenchmart(g);
+            /*
+            LaunchDijkstraBenchmart(g);
+            LaunchDijkstraBenchmart(g);
+            LaunchDijkstraBenchmart(g);
+            LaunchDijkstraBenchmart(g);
+            LaunchDijkstraBenchmart(g);*/
         }
 
         static void Dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget)
@@ -72,12 +78,10 @@ namespace TFE
         }
         static void LaunchDijkstraBenchmart(Graph g)
         {
-            Stopwatch sw = new Stopwatch();
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
             FindRoutablePoint(g, sourceNodes, targetNodes);
 
-            sw.Start();
             DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
 
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
@@ -85,9 +89,8 @@ namespace TFE
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
 
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
-            //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds / 1000);
+
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
         }
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage)
         {
@@ -146,7 +149,8 @@ namespace TFE
                 }
             }
         }
-        static void CompareVertexId(Dijkstra d, int idNodeSource, int idNodeTarget, string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
+        static void CompareVertexId(Dijkstra d, int idNodeSource, int idNodeTarget, 
+            string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
         {
             var r = d.ComputeShortestPath(idNodeSource, idNodeTarget);
             State state = r.Value;
@@ -189,65 +193,5 @@ namespace TFE
                 Console.WriteLine("is ok :" + isOk);
             }
         }
-
-            /*
-            static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
-            {
-                var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
-                state state = r.Value;
-                int i = 0;
-                List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
-
-                state = r.Value;
-                while (true)
-                {
-                    nid.Add(new KeyValuePair<int, int>(state.vertex.id, state.tag));
-                    state = state.previousState;
-                    i++;
-                    if (state.previousState == null)
-                    {
-                        nid.Add(new KeyValuePair<int, int>(state.vertex.id, state.tag));
-                        i++;
-                        break;
-                    }
-                }
-                nid.Reverse();
-                using (TextFieldParser parser = new TextFieldParser(@pathFile))
-                {
-                    parser.TextFieldType = FieldType.Delimited;
-                    parser.SetDelimiters(",");
-                    bool isOk = true;
-                    int j = 0;
-                    bool flag = true;
-                    while (!parser.EndOfData)
-                    {
-                        if (j >= nid.Count)
-                        {
-                            isOk = false;
-                            break;
-                        }
-                        if (flag)
-                        {
-                            var kkkk = parser.ReadLine();
-                            flag = false;
-                            continue;
-                        }
-
-                        int csvid = Convert.ToInt32(parser.ReadLine());
-                        var keyval = nid[j++];
-                        int idindex = keyval.Key;
-                        Console.Write("csvid : " + csvid + " id : " + idindex + " -> == ");
-                        Console.Write(csvid == idindex);
-                        if (csvid != idindex)
-                        {
-                            isOk = false;
-                            Console.WriteLine(" //////////////////////////////////");
-                        }
-                        Console.WriteLine();
-                    }
-                    Console.WriteLine(isOk);
-                }
-            }
-            */
         }
 }
