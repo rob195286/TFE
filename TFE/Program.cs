@@ -50,13 +50,25 @@ namespace TFE
             }
             
             sw.Start();
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
+           // DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
 
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
 
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
 
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds/1000);
@@ -96,7 +108,7 @@ namespace TFE
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\Bidir_Dijkstra_performances.txt"))
+            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\Dijkstra_performances.txt"))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
                 {
