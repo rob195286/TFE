@@ -1,106 +1,202 @@
 ﻿using Priority_Queue; // fast-priority queue
+using System;
 using System.Collections.Generic;
 
 namespace TFE
 {
     public class Dijkstra
     {
-        private FastPriorityQueue<PriorityQueueNode> _queue = new FastPriorityQueue<PriorityQueueNode>(2000); // fast priority queue
+        private FastPriorityQueue<State> _queue;  // Fast Frontward priority queue.
+        private FastPriorityQueue<State> _queueB; // Fast Backward priority queue.
         private Graph _graph;
-        public int lastVisitID = 0;
+        private int _priorityQueueMaxCapacity;
+        public int lastVisit = 0;
         public int totalNumberOfnodes;
         public int tookNodeNumber;
 
-        public Dijkstra(Graph graph)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000)
         {
             _graph = graph;
+            _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
+            _queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
+            _queueB = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
         }
 
-        private KeyValuePair<double, State> PopNextItem()
+        private CostWithNode _PopPriorityQueueHead(bool backwardPQ)
         {
-            PriorityQueueNode qi = _queue.Dequeue();
-            return new KeyValuePair<double, State>(qi.key, qi.value);
+            if (backwardPQ)
+            {
+                State s = _queueB.Dequeue();
+                return new CostWithNode(s.totalCostS, s);
+            }
+            else
+            {
+                State s = _queue.Dequeue();
+                return new CostWithNode(s.totalCostS, s);
+            }
         }
-
-        private void AddNode(double cost, State state)
+        private void _AddNode(double cost, State state, bool backwardPQ)
         {
-            _queue.Enqueue(new PriorityQueueNode(cost, state), (float)cost);
             totalNumberOfnodes++;
+            /*
+            if (_queue.Count >= _priorityQueueMaxCapacity - 1 || _queueB.Count >= _priorityQueueMaxCapacity - 1)
+            {
+                Console.WriteLine(Messages.MaxPQcapacity);
+                Console.WriteLine(_queue.Count);
+                throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
+            }*/
+            if (backwardPQ)
+                _queueB.Enqueue(state, (float)cost);
+            else
+                _queue.Enqueue(state, (float)cost);
         }
-        private void ClearQueue()
+        private void _ClearQueue()
         {
             _queue.Clear();
+            _queueB.Clear();
         }
-        private bool QueueIsEmpty()
+        private bool _QueueIsEmpty(bool backwardPQ)
         {
-            return true ? _queue.Count == 0 : false;
+            if (backwardPQ)
+                return _queueB.Count == 0;
+            else
+                return _queue.Count == 0;
         }
-        private KeyValuePair<double, State> NoPathFound()
+        private KeyValuePair<double, State> _NoPathFound(int sourceVertexID, int destinationVertexID, string message)
         {
-            return new KeyValuePair<double, State>();
+            Console.Write(message);
+            Console.WriteLine($"Noeud source -> {sourceVertexID}, noeud de destination -> {destinationVertexID}");
+            throw new InvalidOperationException("problèmme");
+            //return new KeyValuePair<double, State>();
         }
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int targetNodeID)
+        private State _BuildFinalPath(State forwardState, State backwardState)
         {
-            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(targetNodeID)) return NoPathFound(); // arrête si le noeud de départ ou celui recherché n'existe pas
-            lastVisitID++;
-            ClearQueue();
-            AddNode(0, new State(0, _graph.GetNode(sourceNodeID)));
+            backwardState.previousState = forwardState; // On fait une union entre le chemin du noeud "source -> v" (forwardState) et le premier  
+            State tempState = backwardState;            //      noeud du second chemin (backwardState) vers le noeud de fin "v -> end".
+            while (tempState.nextState != null)
+            {
+                tempState = tempState.nextState;
+                tempState.previousState = backwardState;
+                backwardState = tempState;
+            }
+            return tempState;
+        }
+        private double _CostEvaluation(double totalCostS,
+                                       double costSToNextVertex)
+        {
+            return totalCostS + // Somme du coût des vertices précédements visités, soit du chemin total.   
+                   costSToNextVertex // Le coût pour rejoindre le prochain vertex.
+                   ;
+        }
+
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int destinationVertexID)
+        {
+            Dictionary<int, State> bestPathNodesForward = new Dictionary<int, State>();
+            Dictionary<int, State> bestPathNodesBackward = new Dictionary<int, State>();
+            if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(destinationVertexID)) 
+                return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NodeDontExist); // Arrête si le noeud de départ ou celui recherché n'existe pas
+            lastVisit++;
+            _ClearQueue();
+            _AddNode(0, new State(0, _graph._GetVertex(sourceVertexID)), false);
+            _AddNode(0, new State(0, _graph._GetVertex(destinationVertexID)), true);           
+            double mu = double.PositiveInfinity;
+            State lastBestStateForward = null;
+            State lastBestStateBackward = null;
             tookNodeNumber = 0;
             totalNumberOfnodes = 0;
-            while (!QueueIsEmpty())
+            //------------------------------------------------------------------------------------------------- Début de l'algorithme.
+            while (!_QueueIsEmpty(true) && !_QueueIsEmpty(false))
             {
-                var bestNodeAndCost = PopNextItem();
+                CostWithNode headForward = _PopPriorityQueueHead(false);
+                CostWithNode headBackward = _PopPriorityQueueHead(true);
                 tookNodeNumber++;
-                if (bestNodeAndCost.Value.node.VisitID == lastVisitID) continue;
-                if (bestNodeAndCost.Value.node.id != targetNodeID) bestNodeAndCost.Value.node.VisitID = lastVisitID;
-                if (bestNodeAndCost.Value.node.id == targetNodeID) return new KeyValuePair<double, State>(bestNodeAndCost.Key, bestNodeAndCost.Value);
-                foreach (Edge nextEdge in _graph.GetNextEdges(bestNodeAndCost.Value.node.id, lastVisitID, targetNodeID))
+                if (headForward.cost + headBackward.cost >= mu)  // Condition d'arrêt.
                 {
-                    AddNode(bestNodeAndCost.Key + nextEdge.cost,
-                            new State(bestNodeAndCost.Key + nextEdge.cost,
-                                    nextEdge.targetNode,
-                                    bestNodeAndCost.Value,
-                                    nextEdge.roadName,
-                                    nextEdge)
-                    );
+                    return new KeyValuePair<double, State>(mu, _BuildFinalPath(lastBestStateForward, lastBestStateBackward));
+                }
+                bool forwardVertexHasBeenVisited = headForward.state.vertex.lastVisitForward == lastVisit;    // On doit les mettre ici car après l'actualisation à l'itération acuel (liast visit) fait
+                bool backwardVertexHasBeenVisited = headBackward.state.vertex.lastVisitBackward == lastVisit; //    qu'on rentre pas dans la boucle for. 
+                headForward.state.vertex.lastVisitForward = lastVisit;
+                headBackward.state.vertex.lastVisitBackward = lastVisit;
+                // Ajout du meilleur state pour un vertex déjà parcouru.
+                if (!forwardVertexHasBeenVisited) 
+                    bestPathNodesForward.Add(headForward.state.getVertexID, headForward.state);
+                if (!backwardVertexHasBeenVisited)
+                    bestPathNodesBackward.Add(headBackward.state.getVertexID, headBackward.state);
+                // Recherche forward pour trouver le chemin dans le sens traditionnel.
+                if (!forwardVertexHasBeenVisited)
+                {                   
+                    foreach (Edge nextEdge in _graph.GetNextEdges(headForward.state.vertex.id, lastVisit)) 
+                    {
+                        double cost = _CostEvaluation(headForward.cost, nextEdge.costS);
+                        _AddNode(cost, new State(cost, nextEdge.targetVertex, headForward.state), false);
+                        if (nextEdge.targetVertex.lastVisitBackward == lastVisit && cost + bestPathNodesBackward[nextEdge.targetVertex.id].totalCostS < mu)
+                        {
+                            mu = cost + bestPathNodesBackward[nextEdge.targetVertex.id].totalCostS;
+                            lastBestStateForward = headForward.state;
+                            lastBestStateBackward = bestPathNodesBackward[nextEdge.targetVertex.id];
+                        }
+                    }
+                }               
+                //-------------------------------------------------------------------------------------------------------
+                // Recherche backward pour trouver le chemin dans le sens inverse.
+                if (!backwardVertexHasBeenVisited)
+                {                   
+                    foreach (Edge nextEdge in _graph.GetPreviousEdges(headBackward.state.vertex.id, lastVisit))
+                    {
+                        double cost = _CostEvaluation(headBackward.cost, nextEdge.costS);
+                        _AddNode(cost, new State(cost, nextEdge.sourceVertex, null, headBackward.state), true);
+                        if (nextEdge.sourceVertex.lastVisitForward == lastVisit && cost + bestPathNodesForward[nextEdge.sourceVertex.id].totalCostS < mu)
+                        {
+                            mu = cost + bestPathNodesForward[nextEdge.sourceVertex.id].totalCostS;
+                            lastBestStateForward = bestPathNodesForward[nextEdge.sourceVertex.id];
+                            lastBestStateBackward = headBackward.state;
+                        }
+                    }
                 }
             }
-            return NoPathFound();
+            return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NoPathFound);
         }
     }
-    public class State
+    public class State : FastPriorityQueueNode
     {
-        public double cost { get; private set; }
-        public double cost_s { get; private set; }
-        public double length_m { get; private set; }
-        public Node node { get; private set; }
-        public State previousState { get; private set; }
-        public string roadName { get; private set; }
-        public int tag { get; private set; }
-        public Edge edgeToNode { get; private set; }
+        public double totalCostS { get; } 
+        public Vertex vertex { get; }
+        public State previousState { get; set; }
+        public State nextState { get; set; }
+        public int getVertexID
+        {
+            get { return vertex.id;  }
+        }
+       // public string roadName { get; }
+        //public Edge edgeToNode { get; }
+       // public bool isBackwardNode { get; }
 
-        public State(double pcost, Node pnode, State ppreviousState = null, string proadName = "", Edge pedge = null)
+        public State(double ptotalCost,
+                    Vertex pvertex,
+                    State ppreviousState = null,
+                    State pnextState = null
+                    //bool pisBackwardNode = false
+                    )
+        {
+            totalCostS = ptotalCost;
+            vertex = pvertex;
+            previousState = ppreviousState;
+            nextState = pnextState;
+            //isBackwardNode = pisBackwardNode;
+        }
+    }
+
+    internal struct CostWithNode
+    {
+        public double cost { get; }
+        public State state { get; }
+
+        public CostWithNode(double pcost, State pstate)
         {
             cost = pcost;
-            cost_s = -1;
-            length_m = -1;
-            node = pnode;
-            previousState = ppreviousState;
-            roadName = proadName;
-            edgeToNode = pedge;
+            state = pstate;
         }
     }
 
-    internal class PriorityQueueNode : FastPriorityQueueNode
-    {
-        public double key { get; }
-        public State value { get; }
-
-        public PriorityQueueNode(double cost, State state)
-        {
-            key = cost;
-            value = state;
-        }
-    }
-    
 }
