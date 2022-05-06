@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TFE
 {
-    public class Messages
+    public static class Messages
     {
         public static string NodeDontExist = "Un des nodes passé en paramètre n'existe pas dans le graphe : ";
         public static string NoPathFound = "Aucun chemin trouvé entre le noeud de départ et le noeud de la destination finale : ";

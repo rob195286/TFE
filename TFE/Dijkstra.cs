@@ -82,10 +82,10 @@ namespace TFE
             return tempState;
         }
         private double _CostEvaluation(double totalCostS,
-                                       double costSToNextNode)
+                                       double costSToNextVertex)
         {
-            return totalCostS + // Somme du coût des noeuds précédements visités, soit du chemin total.   
-                   costSToNextNode // Le coût pour rejoindre le prochain noeud.
+            return totalCostS + // Somme du coût des vertices précédements visités, soit du chemin total.   
+                   costSToNextVertex // Le coût pour rejoindre le prochain vertex.
                    ;
         }
 
@@ -94,7 +94,7 @@ namespace TFE
             Dictionary<int, State> bestPathNodesForward = new Dictionary<int, State>();
             Dictionary<int, State> bestPathNodesBackward = new Dictionary<int, State>();
             if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(destinationVertexID)) 
-                return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas
+                return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NodeDontExist); // Arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisit++;
             _ClearQueue();
             _AddNode(0, new State(0, _graph._GetVertex(sourceVertexID)), false);
@@ -106,8 +106,7 @@ namespace TFE
             totalNumberOfnodes = 0;
             //------------------------------------------------------------------------------------------------- Début de l'algorithme.
             while (!_QueueIsEmpty(true) && !_QueueIsEmpty(false))
-            {                
-                
+            {
                 CostWithNode headForward = _PopPriorityQueueHead(false);
                 CostWithNode headBackward = _PopPriorityQueueHead(true);
                 tookNodeNumber++;
@@ -138,11 +137,7 @@ namespace TFE
                             lastBestStateBackward = bestPathNodesBackward[nextEdge.targetVertex.id];
                         }
                     }
-                }
-                if (headForward.cost + headBackward.cost >= mu)  // Condition d'arrêt.
-                {
-                    return new KeyValuePair<double, State>(mu, _BuildFinalPath(lastBestStateForward, lastBestStateBackward));
-                }
+                }               
                 //-------------------------------------------------------------------------------------------------------
                 // Recherche backward pour trouver le chemin dans le sens inverse.
                 if (!backwardVertexHasBeenVisited)
