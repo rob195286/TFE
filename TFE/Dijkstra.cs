@@ -14,7 +14,7 @@ namespace TFE
         public int totalNumberOfnodes;
         public int tookNodeNumber;
 
-        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 3000)
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
@@ -38,13 +38,12 @@ namespace TFE
         private void _AddNode(double cost, State state, bool backwardPQ)
         {
             totalNumberOfnodes++;
-            /*
             if (_queue.Count >= _priorityQueueMaxCapacity - 1 || _queueB.Count >= _priorityQueueMaxCapacity - 1)
             {
                 Console.WriteLine(Messages.MaxPQcapacity);
                 Console.WriteLine(_queue.Count);
                 throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
-            }*/
+            }
             if (backwardPQ)
                 _queueB.Enqueue(state, (float)cost);
             else
@@ -65,9 +64,9 @@ namespace TFE
         private KeyValuePair<double, State> _NoPathFound(int sourceVertexID, int destinationVertexID, string message)
         {
             Console.Write(message);
-            Console.WriteLine($"Noeud source -> {sourceVertexID}, noeud de destination -> {destinationVertexID}");
-            throw new InvalidOperationException("problèmme");
-            //return new KeyValuePair<double, State>();
+            Console.WriteLine($"Noeud source-> {sourceVertexID}, noeud de destination-> {destinationVertexID}");
+            //throw new InvalidOperationException($"{message} \n Noeud source -> {sourceVertexID}, noeud de destination -> {destinationVertexID}");
+            return new KeyValuePair<double, State>();
         }
         private State _BuildFinalPath(State forwardState, State backwardState)
         {
@@ -168,22 +167,17 @@ namespace TFE
         {
             get { return vertex.id;  }
         }
-       // public string roadName { get; }
-        //public Edge edgeToNode { get; }
-       // public bool isBackwardNode { get; }
 
         public State(double ptotalCost,
                     Vertex pvertex,
                     State ppreviousState = null,
                     State pnextState = null
-                    //bool pisBackwardNode = false
                     )
         {
             totalCostS = ptotalCost;
             vertex = pvertex;
             previousState = ppreviousState;
             nextState = pnextState;
-            //isBackwardNode = pisBackwardNode;
         }
     }
 

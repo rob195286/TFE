@@ -141,8 +141,8 @@ namespace TFE
             id = pid;
             outgoingEdges = new List<Edge>();
             reverseOutgoingEdges = new List<Edge>();
-            //latitude = plat;
-            //longitude = plon;
+            latitude = plat;
+            longitude = plon;
         }
 
         public void AddOutgoingEdge(Edge edge)

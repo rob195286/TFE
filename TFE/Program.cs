@@ -26,53 +26,26 @@ namespace TFE
             Console.WriteLine("------------------------------------------------------------------");
             CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
             sw.Start();
-            Dijkstra(dijkstra, idNodeSource, idNodeTarget);
+            //Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
             /*
-            List<int> sourceNodes = new List<int>();
-            List<int> targetNodes = new List<int>();
-            using (TextFieldParser parser = new TextFieldParser(@"routablePointFromDB.csv"))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(",");
-                bool flag = true;
-                while (!parser.EndOfData)
-                {
-                    var x = parser.ReadFields();
-                    if (flag)
-                    {
-                        flag = false;
-                        continue;
-                    }
-                    sourceNodes.Add(Convert.ToInt32(x[0]));
-                    targetNodes.Add(Convert.ToInt32(x[1]));
-                }
-            }
-            
-            sw.Start();
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds/1000);
-            */
+            LaunchDijkstraBenchmart(g, 50);
+            LaunchDijkstraBenchmart(g, 100);
+            LaunchDijkstraBenchmart(g, 250);
+            LaunchDijkstraBenchmart(g, 500);
+            LaunchDijkstraBenchmart(g, 1000);*/
         }
 
-        static void dijkstra(Graph g, int idNodeSource, int idNodeTarget)
+        static void Dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget)
         {
             var r = d.ComputeShortestPath(idNodeSource, idNodeTarget);
-            
+
             int i = 0;
             State state = r.Value;
             List<KeyValuePair<Vertex, double>> vertexWithCostPAth = new List<KeyValuePair<Vertex, double>>();
-            
+
             state = r.Value;
             while (state != null)
             {
@@ -118,7 +91,7 @@ namespace TFE
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\stage\banchmark\Dijkstra_performances.txt"))
+            using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\BiDir_Dijkstra_performances.txt"))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
                 {
@@ -169,7 +142,7 @@ namespace TFE
                 }
             }
         }
-        static void CompareVertexId(Dijkstra d, int idNodeSource, int idNodeTarget, 
+        static void CompareVertexId(Dijkstra d, int idNodeSource, int idNodeTarget,
             string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
         {
             var r = d.ComputeShortestPath(idNodeSource, idNodeTarget);
@@ -179,7 +152,7 @@ namespace TFE
             while (state != null)
             {
                 listVid.Add(new KeyValuePair<int, double>(state.vertex.id, state.totalCostS));
-                state = state.previousState;                
+                state = state.previousState;
             }
             listVid.Reverse();
             using (TextFieldParser parser = new TextFieldParser(@pathFile))
@@ -192,9 +165,10 @@ namespace TFE
                 bool isOk = true;
                 bool flag = true;
                 while (!parser.EndOfData)
-                {                    
+                {
                     var x = parser.ReadFields();
-                    if (flag){
+                    if (flag)
+                    {
                         flag = false;
                         continue;
                     }
@@ -212,5 +186,5 @@ namespace TFE
                 Console.WriteLine("is ok :" + isOk);
             }
         }
-        }
+    }
 }
