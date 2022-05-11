@@ -24,9 +24,9 @@ namespace TFE
 
             Dijkstra dijkstra = new Dijkstra(g);
             Console.WriteLine("------------------------------------------------------------------");
-            CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
+            //CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
             sw.Start();
-            //Dijkstra(dijkstra, idNodeSource, idNodeTarget);
+            Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
@@ -68,6 +68,9 @@ namespace TFE
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
             Console.WriteLine("cost : " + r.Key);
+            Console.WriteLine("tookNodeNumber : " + d.tookNodeNumber);
+            Console.WriteLine("totalNumberOfnodes : " + d.totalNumberOfnodes);
+            Console.WriteLine("queueNode : " + d.queueNode);
         }
         static void LaunchDijkstraBenchmart(Graph g, int routageNumber)
         {

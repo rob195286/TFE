@@ -13,15 +13,16 @@ namespace TFE
         public int lastVisit = 0;
         public int totalNumberOfnodes;
         public int tookNodeNumber;
+        public int queueNode;
 
-        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 3000)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 1600)
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
             _queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
             _queueB = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
         }
-
+        
         private CostWithNode _PopPriorityQueueHead(bool backwardPQ)
         {
             if (backwardPQ)
@@ -141,7 +142,7 @@ namespace TFE
                 // Recherche backward pour trouver le chemin dans le sens inverse.
                 if (!backwardVertexHasBeenVisited)
                 {                   
-                    foreach (Edge nextEdge in _graph.GetPreviousEdges(headBackward.state.vertex.id, lastVisit))
+                    foreach (Edge nextEdge in _graph.GetNextReverseEdges(headBackward.state.vertex.id, lastVisit))
                     {
                         double cost = _CostEvaluation(headBackward.cost, nextEdge.costS);
                         _AddNode(cost, new State(cost, nextEdge.sourceVertex, null, headBackward.state), true);

@@ -10,12 +10,12 @@ namespace TFE
     public class Graph
     {
         private Dictionary<int, Vertex> _vertices;
-        private Dictionary<int, Edge> _edges;
+        public Dictionary<int, List<Edge>> _edges;
 
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             _vertices = new Dictionary<int, Vertex>() { };
-            _edges = new Dictionary<int, Edge>() { };
+            _edges = new Dictionary<int, List<Edge>>() { };
             _CreateGraph(filePath);
         }
 
@@ -62,8 +62,14 @@ namespace TFE
         }
         private void _SaveEdge(Edge edge)
         {
-            if (!_edges.ContainsKey(edge.osmId))
-                _edges.Add(edge.osmId, edge);
+            if (_edges.ContainsKey(edge.osmId))
+            {
+                _edges[edge.osmId].Add(edge);
+            }
+            else
+            {
+                _edges.Add(edge.osmId, new List<Edge>() { edge });
+            }
         }
         public bool VertexExist(int id)
         {
@@ -101,7 +107,7 @@ namespace TFE
                 }
             }
         }   
-        public IEnumerable<Edge> GetPreviousEdges(int vertexID, int visitId)
+        public IEnumerable<Edge> GetNextReverseEdges(int vertexID, int visitId)
         {
             foreach (Edge edge in _GetVertex(vertexID).reverseOutgoingEdges)
             {
@@ -111,16 +117,12 @@ namespace TFE
                 }
             }
         }     
-        public void ChangeEdgeCost(int osmId, double newCost, double newCostS)
+        public void ChangeEdgeCost(int osmId, double newCost)
         {
-            if (newCostS == null)
-            {
-                _edges[osmId].costS = newCost;
-            }
-            else if (newCost == null)
-            {
-                _edges[osmId].costS = newCostS;
-            }
+            _edges[osmId].ForEach(delegate(Edge edge) {
+                edge.cost *= newCost;
+            });
+           // _edges[osmId].cost = newCost;
         }
     }
 
@@ -172,15 +174,16 @@ namespace TFE
         public Vertex targetVertex { get; set; }
         public double cost { get; set; }
         public double costS { get; set; }
-        public int osmId { get; private set; }
+        public int osmId { get; set; }
 
         public Edge(double? plength_m, string proadName,
-                    double pcost, double pcoastS,
+                    double pcost, double pcostS,
                     int pmaxSpeedForward, int posmId)
         {
             sourceVertex = new Vertex(-1, 0, 0);
             targetVertex = new Vertex(-1, 0, 0);
-            costS = pcoastS;
+            costS = pcostS;
+            cost = pcost;
             osmId = posmId;
         }
 

@@ -56,30 +56,46 @@ namespace TestTFE.UnitTests
         [TestMethod]
         public void TestGetPrivousEdgesFromNode()
         {
-            foreach (Edge edge in graph.GetPreviousEdges(588, -1))
+            foreach (Edge edge in graph.GetNextReverseEdges(588, -1))
             {
                 Assert.AreEqual(true, new List<int>() { 41001, 623436, 274154, 662021, 935935 }.Contains(edge.sourceVertex.id));
             }
-            foreach (Edge edge in graph.GetPreviousEdges(679595, -1))
+            foreach (Edge edge in graph.GetNextReverseEdges(679595, -1))
             {
                 Assert.AreEqual(true, new List<int>() { 688737, 688736, 688735, 688734, 688733, 679594 }.Contains(edge.sourceVertex.id));
             }
-            foreach (Edge edge in graph.GetPreviousEdges(280, -1))
+            foreach (Edge edge in graph.GetNextReverseEdges(280, -1))
             {
                 Assert.AreEqual(true, new List<int>() { 314, 365917, 279, }.Contains(edge.sourceVertex.id));
             }
-            foreach (Edge edge in graph.GetPreviousEdges(20929, -1))
+            foreach (Edge edge in graph.GetNextReverseEdges(20929, -1))
             {
                 Assert.AreEqual(true, new List<int>() { 27830, 164639, 360555, 898581, 797695, 940121 }.Contains(edge.sourceVertex.id));
             }
-            foreach (Edge edge in graph.GetPreviousEdges(270371, -1))
+            foreach (Edge edge in graph.GetNextReverseEdges(270371, -1))
             {
                 Assert.AreEqual(true, new List<int>() { 272413, 521289, 555355, 752449, 272415, 561497 }.Contains(edge.sourceVertex.id));
             }
-            foreach (Edge edge in graph.GetPreviousEdges(34152, -1))
+            foreach (Edge edge in graph.GetNextReverseEdges(34152, -1))
             {
                 Assert.AreEqual(true, new List<int>() { 789764 }.Contains(edge.sourceVertex.id));
             }
+        }
+
+        [TestMethod]
+        public void TestChangeEdgeCost()
+        {
+            Assert.AreEqual(0.00004491603277117362, graph._edges[1001805435][0].cost);
+            Assert.AreEqual(0.0004181054256197113, graph._edges[1001805435][1].cost);
+
+            double multiplier = 3;
+            graph.ChangeEdgeCost(1001805435, multiplier);
+            Assert.AreEqual(0.0004181054256197113 * multiplier, graph._edges[1001805435][1].cost);
+
+            graph.ChangeEdgeCost(1001805435, 1/multiplier);
+            multiplier = 5;
+            graph.ChangeEdgeCost(1001805435, multiplier);
+            Assert.AreEqual(0.00004491603277117362 * multiplier, graph._edges[1001805435][0].cost);
         }
     }
 }
