@@ -97,8 +97,8 @@ namespace TFE
                 return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NodeDontExist); // Arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisit++;
             _ClearQueue();
-            _AddNode(0, new State(0, _graph._GetVertex(sourceVertexID)), false);
-            _AddNode(0, new State(0, _graph._GetVertex(destinationVertexID)), true);           
+            _AddNode(0, new State(0, _graph.GetVertex(sourceVertexID)), false);
+            _AddNode(0, new State(0, _graph.GetVertex(destinationVertexID)), true);           
             double mu = double.PositiveInfinity;
             State lastBestStateForward = null;
             State lastBestStateBackward = null;
@@ -128,7 +128,7 @@ namespace TFE
                 {                   
                     foreach (Edge nextEdge in _graph.GetNextEdges(headForward.state.vertex.id, lastVisit)) 
                     {
-                        double cost = _CostEvaluation(headForward.cost, nextEdge.costS);
+                        double cost = _CostEvaluation(headForward.cost, nextEdge.cost);
                         _AddNode(cost, new State(cost, nextEdge.targetVertex, headForward.state), false);
                         if (nextEdge.targetVertex.lastVisitBackward == lastVisit && cost + bestPathNodesBackward[nextEdge.targetVertex.id].totalCostS < mu)
                         {
@@ -144,7 +144,7 @@ namespace TFE
                 {                   
                     foreach (Edge nextEdge in _graph.GetNextReverseEdges(headBackward.state.vertex.id, lastVisit))
                     {
-                        double cost = _CostEvaluation(headBackward.cost, nextEdge.costS);
+                        double cost = _CostEvaluation(headBackward.cost, nextEdge.cost);
                         _AddNode(cost, new State(cost, nextEdge.sourceVertex, null, headBackward.state), true);
                         if (nextEdge.sourceVertex.lastVisitForward == lastVisit && cost + bestPathNodesForward[nextEdge.sourceVertex.id].totalCostS < mu)
                         {

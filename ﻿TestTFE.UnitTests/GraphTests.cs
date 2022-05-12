@@ -85,17 +85,17 @@ namespace TestTFE.UnitTests
         [TestMethod]
         public void TestChangeEdgeCost()
         {
-            Assert.AreEqual(0.00004491603277117362, graph._edges[1001805435][0].cost);
-            Assert.AreEqual(0.0004181054256197113, graph._edges[1001805435][1].cost);
+            Assert.AreEqual(0.00004491603277117362, graph.GetEdge(1001805435)[0].cost);
+            Assert.AreEqual(0.0004181054256197113, graph.GetEdge(1001805435)[1].cost);
 
             double multiplier = 3;
             graph.ChangeEdgeCost(1001805435, multiplier);
-            Assert.AreEqual(0.0004181054256197113 * multiplier, graph._edges[1001805435][1].cost);
+            Assert.AreEqual(0.0004181054256197113 * multiplier, graph.GetEdge(1001805435)[1].cost);
 
             graph.ChangeEdgeCost(1001805435, 1/multiplier);
             multiplier = 5;
             graph.ChangeEdgeCost(1001805435, multiplier);
-            Assert.AreEqual(0.00004491603277117362 * multiplier, graph._edges[1001805435][0].cost);
+            Assert.AreEqual(0.00004491603277117362 * multiplier, graph.GetEdge(1001805435)[0].cost);
         }
     }
 }
