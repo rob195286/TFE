@@ -66,6 +66,7 @@ namespace TFE
                         sourceVertex.AddReverseOutgoingEdge(edge); // Ajout pour le reverse graph
                         edge.sourceVertex = targetVertex;
                         edge.targetVertex = sourceVertex;
+                        _SaveEdge(edge);
                     }
                 }
             }
@@ -127,7 +128,7 @@ namespace TFE
                 }
             }
         }     
-        public List<Edge> GetEdge(int osmID)
+        public List<Edge> GetEdges(int osmID)
         {
             return _edges[osmID];
         }
