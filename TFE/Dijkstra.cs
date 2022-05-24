@@ -94,7 +94,7 @@ namespace TFE
             Dictionary<int, State> bestPathNodesForward = new Dictionary<int, State>();
             Dictionary<int, State> bestPathNodesBackward = new Dictionary<int, State>();
             if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(destinationVertexID)) 
-                return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NodeDontExist); // Arrête si le noeud de départ ou celui recherché n'existe pas
+                return _NoPathFound(sourceVertexID, destinationVertexID, Messages.VertexDontExist); // Arrête si le noeud de départ ou celui recherché n'existe pas
             lastVisit++;
             _ClearQueue();
             _AddNode(0, new State(0, _graph.GetVertex(sourceVertexID)), false);
