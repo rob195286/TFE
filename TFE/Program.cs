@@ -49,7 +49,7 @@ namespace TFE
             state = r.Value;
             while (state != null)
             {
-                vertexWithCostPAth.Add(new KeyValuePair<Vertex, double>(state.vertex, state.totalCostS));
+                vertexWithCostPAth.Add(new KeyValuePair<Vertex, double>(state.vertex, state.totalCost));
                 state = state.previousState;
                 i++;
             }
@@ -70,7 +70,7 @@ namespace TFE
             Console.WriteLine("cost : " + r.Key);
             Console.WriteLine("tookNodeNumber : " + d.tookNodeNumber);
             Console.WriteLine("totalNumberOfnodes : " + d.totalNumberOfnodes);
-            Console.WriteLine("queueNode : " + d.queueNode);
+            //Console.WriteLine("queueNode : " + d.queueNode);
         }
         static void LaunchDijkstraBenchmart(Graph g, int routageNumber)
         {
@@ -154,7 +154,7 @@ namespace TFE
 
             while (state != null)
             {
-                listVid.Add(new KeyValuePair<int, double>(state.vertex.id, state.totalCostS));
+                listVid.Add(new KeyValuePair<int, double>(state.vertex.id, state.totalCost));
                 state = state.previousState;
             }
             listVid.Reverse();
