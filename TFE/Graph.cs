@@ -202,11 +202,11 @@ namespace TFE
         ///     à celui du nombre indiqué comme deuxième paramètre.
         /// </summary>
         /// <param name="osmId"> Identifiant des arêtes dont on veut modifier le coût. </param>
-        /// <param name="newCost"> Nombre multiplicateur qui modifiera le coût des arêtes trouvées. </param>
-        public void ChangeEdgeCost(int osmId, double newCost)
+        /// <param name="multiplier"> Nombre multiplicateur qui modifiera le coût des arêtes trouvées. </param>
+        public void ChangeEdgeCost(int osmId, double multiplier)
         {
             _edges[osmId].ForEach(delegate(Edge edge) {
-                edge.cost *= newCost;
+                edge.cost *= multiplier;
             });
         }
     }
