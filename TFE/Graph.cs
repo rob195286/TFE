@@ -9,15 +9,17 @@ namespace TFE
 {
     public class Graph
     {
-        private Dictionary<int, Node> _nodes;
+        // Ensemble de tous les vertices / noeuds qui consituent le graphe.
+        private Dictionary<int, Vertex> _vertices = new Dictionary<int, Vertex>() { };
+        // Ensemble de toutes les arêtes qui consituent le graphe.
+        private Dictionary<int, List<Edge>> _edges = new Dictionary<int, List<Edge>>() { };
 
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
-            _nodes = new Dictionary<int, Node>() { };
             CreateGraph(filePath);
         }
 
-        private Node GetNode(int id, double lon, double lat)
+        private Vertex GetNode(int id, double lon, double lat)
         {
             if (NodeExist(id))
             {
@@ -25,68 +27,100 @@ namespace TFE
             }
             else
             {
-                return new Node(id, lon, lat);
+                return new Vertex(id, lon, lat);
             }
         }
         private void CreateGraph(string filePath)
         {
             using (var reader = new StreamReader(filePath))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {   // permet d'ajouter des champs null.
+            {   // Permet d'ajouter des champs null car certaines valeurs dans la base de données le sont.
                 csv.Context.TypeConverterOptionsCache.GetOptions<double?>().NullValues.Add("NULL");
                 foreach (CSVwayData way in csv.GetRecords<CSVwayData>())
-                {
-                    Node sourceNode = GetNode(way.source, way.x1, way.y1);
-                    Node targetNode = GetNode(way.target, way.x2, way.y2);
-                    Edge edge = new Edge(way.length_m, way.name, way.cost, way.cost_s ?? 999999, way.maxspeed_forward); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                {   // Créer ou récupère les vertices et arêtes à partir des données récupérées de la ligne du fichier CSV.
+                    Vertex sourceNode = GetNode(way.source, way.x1, way.y1);
+                    Vertex targetNode = GetNode(way.target, way.x2, way.y2);
+                    Edge edge = new Edge(way.length,
+                                         way.cost_s ?? 99999,
+                                         way.maxspeed_forward,
+                                         way.maxspeed_backward,
+                                         way.osm_id,
+                                         way.tag_id,
+                                         way.one_way); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                    // Sauvegarde l'arête dans le dictinnaire d'arêtes "_edges" pour pouvoir modifier leur coût.
+                    _SaveEdge(edge);
                     //------------------------------- one way
                     sourceNode.AddOutgoingEdge(edge);
-                    edge.sourceNode = sourceNode;
-                    edge.targetNode = targetNode;
+                    edge.sourceVertex = sourceNode;
+                    edge.targetVertex = targetNode;
                     //------------------------------- two way
                     if (way.one_way == 2 || way.one_way == 0)
                     {
-                        edge = new Edge(way.length_m, way.name, way.reverse_cost, way.reverse_cost_s ?? 999999, way.maxspeed_backward);
+                        edge = new Edge(way.length,
+                                        way.reverse_cost_s ?? 99999,
+                                        way.maxspeed_forward,
+                                        way.maxspeed_backward,
+                                        way.osm_id,
+                                        way.tag_id,
+                                        way.one_way); 
                         targetNode.AddOutgoingEdge(edge);
-                        edge.sourceNode = targetNode;
-                        edge.targetNode = sourceNode;
+                        edge.sourceVertex = targetNode;
+                        edge.targetVertex = sourceNode;
+                        _SaveEdge(edge);
                     }
                     AddNode(sourceNode);
                     AddNode(targetNode);
                 }
             }
         }
+        /// <summary>
+        ///     Fonction sauvegardant l'arête passée en paramètre en créant une nouvelle liste d'arêtes si 
+        ///     son identifiant n'existe pas déjà dans le dictionnaire et en l'ajoutant à la liste si
+        ///     l'arête existe déjà.
+        /// </summary>
+        /// <param name="edge"> Arête à ajouter dans le dictionnaire contenant toutes les arêtes. </param>
+        private void _SaveEdge(Edge edge)
+        {
+            if (_edges.ContainsKey(edge.osmID))
+            {
+                _edges[edge.osmID].Add(edge);
+            }
+            else
+            {
+                _edges.Add(edge.osmID, new List<Edge>() { edge });
+            }
+        }
         public bool NodeExist(int id)
         {
-            return _nodes.ContainsKey(id);
+            return _vertices.ContainsKey(id);
         }
-        public bool AddNode(Node node)
+        public bool AddNode(Vertex vertex)
         {
-            if (!NodeExist(node.id))// éviter d'ajouter 2x la même key et d'avoir une exception
+            if (!NodeExist(vertex.id))// éviter d'ajouter 2x la même key et d'avoir une exception
             {
-                _nodes.Add(node.id, node);
+                _vertices.Add(vertex.id, vertex);
                 return true;
             }
             return false;
         }
-        public Node GetNode(int nodeID)
+        public Vertex GetNode(int vertexID)
         {
-            Node node = null; // todo : voir comment gére exception
+            Vertex vertex = null; // todo : voir comment gére exception
             try
             {
-                node = _nodes[nodeID];
+                vertex = _vertices[vertexID];
             }
-            catch (System.Collections.Generic.KeyNotFoundException)
+            catch (KeyNotFoundException)
             {
-                Console.WriteLine("aucun node trouvé");// throw;
+                Console.WriteLine("aucun vertex trouvé");// throw;
             }
-            return node;
+            return vertex;
         }
-        public IEnumerable<Edge> GetNextEdges(int nodeID, int visitId)
+        public IEnumerable<Edge> GetNextEdges(int vertexID, int visitId)
         {
-            foreach (Edge edge in GetNode(nodeID).outgoingEdges)
+            foreach (Edge edge in GetNode(vertexID).outgoingEdges)
             {
-                if (edge.targetNode.VisitID != visitId && edge.cost >= 0)
+                if (edge.targetVertex.lastVisit != visitId && edge.cost >= 0)
                 {
                     yield return edge;
                 }
@@ -97,28 +131,46 @@ namespace TFE
         /// </summary>
         /// <param name="nodeID"> Id du noeud à partir duquel on veut trouver ses voisins. </param>
         /// <returns> Retourne une liste de noeuds contenant l'nsemble des noeuds voisins. </returns>
-        public List<Node> GetNextNodes(int nodeID)
+        public List<Vertex> GetNextNodes(int vertexID)
         {
-            List<Node> nodes = new List<Node>();
-            foreach (Edge edge in GetNode(nodeID).outgoingEdges)
+            List<Vertex> nodes = new List<Vertex>();
+            foreach (Edge edge in GetNode(vertexID).outgoingEdges)
             {
-                nodes.Add(edge.targetNode);
+                nodes.Add(edge.targetVertex);
             }
             return nodes;
+        }
+        /// <summary>
+        ///     Cette fonction permet de changer le coût des arêtes par rapport à un identifiant.
+        ///     L'ensemble des arêtes ayant cette identifiant seront modifiées d'un facteur égale
+        ///     à celui du nombre indiqué comme deuxième paramètre.
+        /// </summary>
+        /// <param name="osmId"> Identifiant des arêtes dont on veut modifier le coût. </param>
+        /// <param name="multiplier"> Nombre multiplicateur qui modifiera le coût des arêtes trouvées. </param>
+        public void ChangeEdgeCost(int osmId, double multiplier)
+        {
+            _edges[osmId].ForEach(delegate (Edge edge) {
+                edge.cost *= multiplier;
+            });
         }
     }
 
     //--------------------------------------------------------------------------------------------------------
 
-    public class Node
+    public class Vertex
     {
+        // Identifiant OSM du vertex (dans ce cas il s'agit de la valeur "source" tirée de la base de données).
         public int id { get; private set; }
-        public List<Edge> outgoingEdges { get; private set; }
+        // Liste des arêtes du vertex qui mène vers un des autres vertex.
+        public List<Edge> outgoingEdges { get; private set; } = new List<Edge>();
+        // Latitude du vertex.
         public double latitude { get; private set; }
+        // Longitude du vertex.
         public double longitude { get; private set; }
-        public int VisitID = 0;
+        // Valeur de l'identifiant de la dernière fois que le vertex a été visité pour la recherche forward.
+        public int lastVisit = 0;
 
-        public Node(int pid, double plon, double plat)
+        public Vertex(int pid, double plon, double plat)
         {
             id = pid;
             outgoingEdges = new List<Edge>();
@@ -132,7 +184,7 @@ namespace TFE
         }
         public override string ToString()
         {
-            return "node info :" +
+            return "vertex info :" +
                     "\n-----------" +
                     "\n - id : " + id +
                     "\n - latitude : " + latitude +
@@ -143,37 +195,51 @@ namespace TFE
 
     public class Edge
     {
-        public double? length_m { get; private set; }
-        public string roadName { get; private set; }
-        public Node sourceNode { get; set; }
-        public Node targetNode { get; set; }
-        public double cost { get; private set; }
-        public double costS { get; private set; }
-        public int maxSpeedForward { get; private set; }
+        // Identifiant OSM de l'arête (il s'agit de la valeur "osm_id" dans la base de données).
+        public int osmID { get; private set; }
+        // Vertex d'où l'arête part (puisque le graphe est dirigé) pour mener au vertex suivant dans la recherche forward.
+        public Vertex sourceVertex { get; set; } = new Vertex(-1, 0, 0);
+        // Vertex d'où l'arête part (puisque le graphe est dirigé) pour mener au vertex précédent dans la recherche backward.
+        public Vertex targetVertex { get; set; } = new Vertex(-1, 0, 0);
+        // Longueur de l'arête.
+        public double length { get; set; }
+        // Coût pour traverser l'arête (celle qui sera utilisée par l'algorithme Dijkstra).
+        public double cost { get; set; }
+        // Vitesse maximum pour le parcourt dans le sens forward.
+        public double maxSpeedForward { get; private set; }
+        // Vitesse maximum pour le parcourt dans le sens backward.
+        public double maxSpeedBackward { get; private set; }
+        // Type de route (auto-route, tram...).
+        public int tagID { get; private set; }
+        // Indication sur le sens de parcourt de la route, unidirectionnelle ou bidirectionnelle.
+        public int oneWay { get; private set; }
 
-        public Edge(double? plength_m, string proadName,
-                    double pcost, double pcoastS,
-                    int pmaxSpeedForward)
+        public Edge(double plength,
+                    double pcost,
+                    int pmaxSpeedForward,
+                    int pmaxSpeedBackward,
+                    int posmID,
+                    int ptagID,
+                    int poneWay
+            )
         {
-            length_m = plength_m;
-            roadName = proadName;
-            sourceNode = new Node(-1, 0, 0);
-            targetNode = new Node(-1, 0, 0);
+            length = plength;
             cost = pcost;
-            costS = pcoastS;
             maxSpeedForward = pmaxSpeedForward;
+            maxSpeedBackward = pmaxSpeedBackward;
+            osmID = posmID;
+            tagID = ptagID;
+            oneWay = poneWay;
         }
 
         public override string ToString()
         {
             return "edge info :" +
                     "\n-----------" +
-                    "\n - length_m : " + length_m +
-                    "\n - roadName : " + roadName +
-                    "\n - node source id : " + sourceNode.id +
-                    "\n - node target id : " + targetNode.id +
-                    "\n - costS : " + cost +
-                    "\n - costS : " + costS +
+                    "\n - length : " + length +
+                    "\n - vertex source id : " + sourceVertex.id +
+                    "\n - vertex target id : " + targetVertex.id +
+                    "\n - totalCost : " + cost +
                     "\n - maxSpeedForward : " + maxSpeedForward +
                     "\n";
         }
@@ -184,7 +250,7 @@ namespace TFE
         [Index(0)]
         public int gid { get; set; }
         [Index(1)]
-        public double? length_m { get; set; }
+        public double length { get; set; }
         [Index(2)]
         public string name { get; set; }
         [Index(3)]
@@ -213,8 +279,10 @@ namespace TFE
         public int maxspeed_forward { get; set; }
         [Index(15)]
         public int maxspeed_backward { get; set; }
-        // [Index(16)]
-        // public int tag_id { get; set; }
+        [Index(16)]
+        public int osm_id { get; set; }
+        [Index(17)]
+        public int tag_id { get; set; }
     }
 }
 

@@ -30,7 +30,7 @@ namespace TFE
             var d = new Dijkstra(g);
             
             sw.Start();
-            dijkstra(d, idNodeSource, idNodeTarget, false);
+            //dijkstra(d, idNodeSource, idNodeTarget, false);
             dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
@@ -63,27 +63,27 @@ namespace TFE
             
             int i = 0;
             State state = r.Value;
-            List<KeyValuePair<Node, string>> id_RoadName = new List<KeyValuePair<Node, string>>();
+            List<KeyValuePair<Vertex, string>> id_RoadName = new List<KeyValuePair<Vertex, string>>();
             
             state = r.Value;
             while (state != null)
             {
-                id_RoadName.Add(new KeyValuePair<Node, string>(state.node, state.roadName));
+                id_RoadName.Add(new KeyValuePair<Vertex, string>(state.vertex, ""));
                 state = state.previousState;
                 i++;
             }            
             /*
             id_RoadName.Reverse();
-            foreach (KeyValuePair<Node, string> nodeNroadName in id_RoadName)
+            foreach (KeyValuePair<Vertex, string> nodeNroadName in id_RoadName)
             {
-                Console.Write(" node id : " + nodeNroadName.Key.id);
+                Console.Write(" vertex id : " + nodeNroadName.Key.id);
                 Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
             }            
             */
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
-            Console.WriteLine("costS : " + r.Key);
+            Console.WriteLine("totalCost : " + r.Key);
             Console.WriteLine("costSonly : " + r.Value.costSOnly);
             Console.WriteLine("nbr de noeud pris de la queue : " + d.tookNodeNumber);
             Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
@@ -183,19 +183,19 @@ namespace TFE
         static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = "path.csv")
         {
             var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
-            State State = r.Value;
+            state state = r.Value;
             int i = 0;
             List<KeyValuePair<int, int>> nid = new List<KeyValuePair<int, int>>();
 
-            State = r.Value;
+            state = r.Value;
             while (true)
             {
-                nid.Add(new KeyValuePair<int, int>(State.node.id, State.tag));
-                State = State.previousState;
+                nid.Add(new KeyValuePair<int, int>(state.vertex.id, state.tag));
+                state = state.previousState;
                 i++;
-                if (State.previousState == null)
+                if (state.previousState == null)
                 {
-                    nid.Add(new KeyValuePair<int, int>(State.node.id, State.tag));
+                    nid.Add(new KeyValuePair<int, int>(state.vertex.id, state.tag));
                     i++;
                     break;
                 }

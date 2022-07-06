@@ -33,7 +33,7 @@ namespace TFE
         /// <returns>
         ///     Retourne le temps en secondes.
         /// </returns>
-        public static double EuclideanDistanceFromToInSecond(Node currentNode, Node targetNode, double carSpeed = 130)
+        public static double EuclideanDistanceFromToInSecond(Vertex currentNode, Vertex targetNode, double carSpeed = 133.2)
         {
             /// <summary>
             ///     speed km/h = speed/3600 km/s            

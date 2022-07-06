@@ -24,7 +24,7 @@ namespace TFE
         private CostWithNode _PopHeadPriorityQueue()
         {
             State s = _queue.Dequeue();
-            return new CostWithNode(s.costS, s);
+            return new CostWithNode(s.totalCost, s);
         }
         private void _AddPriotiyQueueNode(double cost, State state)
         {
@@ -51,10 +51,10 @@ namespace TFE
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, State>();
         }
-        private double _Heuristics(Node nextNode, Node finalNode, double costToNextNode)
+        private double _Heuristics(Vertex nextNode, Vertex finalNode, double costToNextNode)
         {
             //  1.7111
-            return costToNextNode * (GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) / 7477);
+            return GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode);
         }
         /// <summary>
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
@@ -69,21 +69,23 @@ namespace TFE
         ///      Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
         ///      La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
         /// </returns>
-        private double _CostEvaluation(Node nextNode,
-                                       Node finalNode,
+        private double _CostEvaluation(Vertex nextNode,
+                                       Vertex finalNode,
                                        double totalCost,
-                                       double costSToNextNode, 
-                                       bool withEuclideanDistance,
+                                       double costToNextNode, 
+                                       bool withHeuristic,
                                        int heuristicsWeight = 25)
         {
+            double g = totalCost + costToNextNode;
+            double h = withHeuristic ? _Heuristics(nextNode, finalNode, costToNextNode) : 0;
             return totalCost + // Somme du coût des noeuds précédements visités, soit du chemin total.   
-                costSToNextNode + // Le coût pour rejoindre le prochain noeud.
-                (withEuclideanDistance ? _Heuristics(nextNode, finalNode, costSToNextNode) : 0) * heuristicsWeight
-                //((withEuclideanDistance ? GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) : 0)*0/1221.72) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
+                costToNextNode + // Le coût pour rejoindre le prochain noeud.
+                (withHeuristic ? _Heuristics(nextNode, finalNode, costToNextNode) : 0) //* heuristicsWeight
+                //((withHeuristic ? GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) : 0)*0/1221.72) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
                 ;
         }
 
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withEuclideanOption = false)
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withHeuristic = false)
         {
             if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) 
                 return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
@@ -91,27 +93,27 @@ namespace TFE
             _ClearQueue();
             totalNumberOfnodes = 0;
             _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(sourceNodeID), 0, null));
-            Node endNode = _graph.GetNode(endNodeID);
+            Vertex endNode = _graph.GetNode(endNodeID);
             tookNodeNumber = 0;
             while (!_QueueIsEmpty())
             {
                 CostWithNode bestNode = _PopHeadPriorityQueue();
                 tookNodeNumber++;
-                if (bestNode.State.node.id == endNodeID)
-                    return new KeyValuePair<double, State>(bestNode.cost, bestNode.State);
-                if (bestNode.State.node.VisitID == lastVisitID) 
+                if (bestNode.state.getVertexID == endNodeID)
+                    return new KeyValuePair<double, State>(bestNode.cost, bestNode.state);
+                if (bestNode.state.vertex.lastVisit == lastVisitID) 
                     continue;
-                bestNode.State.node.VisitID = lastVisitID;                
+                bestNode.state.vertex.lastVisit = lastVisitID;                
 
-                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.State.node.id, lastVisitID))
+                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
                 {
-                    _AddPriotiyQueueNode(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withEuclideanOption),
-                            new State(_CostEvaluation(nextEdge.targetNode, endNode, bestNode.State.costS, nextEdge.costS, withEuclideanOption),
-                                    nextEdge.targetNode,
-                                    bestNode.State.costSOnly + nextEdge.costS,
-                                    bestNode.State,
-                                    nextEdge.roadName,
-                                    nextEdge)
+                    double cost = _CostEvaluation(nextEdge.targetVertex, endNode, bestNode.cost, nextEdge.cost, withHeuristic);
+                    _AddPriotiyQueueNode(cost,
+                                        new State(cost,
+                                                nextEdge.targetVertex,
+                                                //bestNode.state.costSOnly + nextEdge.cost,
+                                                0,
+                                                bestNode.state)
                     );
                 }
             }
@@ -121,38 +123,39 @@ namespace TFE
 
     public class State : FastPriorityQueueNode
     {
-        public double costS { get; } // cost en seconde + temps à vol d'soieau
-        public Node node { get; }
-        public State previousState { get; }
-        public string roadName { get; }
-        public Edge edgeToNode { get; }
-        public double costSOnly { get; } // todo : à enlever -> on prend seulement les cost en seconde 
-
-
-        public State(double pcost,
-                    Node pnode,
-                    double pcostSOnly,
-                    State ppreviousState = null,
-                    string proadName = "",
-                    Edge pedge = null)
+        // Coût total (smme du cpupt des arêtes) pour atteindre le vertex qui sera ajouté à cet état.
+        public double totalCost { get; }
+        public Vertex vertex { get; }
+        // Etat précédant celui-ci qui permet de retrouvé la succession de vertices qui constituent le chemin. 
+        public State previousState { get; set; }
+        // Récupération de l'identifiant OSM du vertex.
+        public int getVertexID
         {
-            costS = pcost;
-            node = pnode;
+            get { return vertex.id; }
+        }
+        public double costSOnly { get; } // todo : à enlever -> on prend seulement les totalCost en seconde 
+
+
+        public State(double ptotalCost,
+                    Vertex pvertex,
+                    double pcostSOnly,
+                    State ppreviousState = null)
+        {
+            totalCost = ptotalCost;
+            vertex = pvertex;
             previousState = ppreviousState;
-            roadName = proadName;
-            edgeToNode = pedge;
             costSOnly = pcostSOnly;
         }
     }
 
     internal struct CostWithNode{
         public double cost { get; }
-        public State State { get; }
+        public State state { get; }
 
         public CostWithNode(double pcost, State pstate)
         {
             cost = pcost;
-            State = pstate;
+            state = pstate;
         }
     }
 }
