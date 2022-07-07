@@ -61,5 +61,22 @@ namespace TestTFE.UnitTests
                 Assert.AreEqual(true, new List<int>() { 4930, 270077, 1002204, 18428 }.Contains(edge.targetVertex.id));
             }
         }
+        
+        [TestMethod]
+        public void TestChangeEdgeCost()
+        {
+            //List<Edge> edgeCost = graph.GetEdges(1001805435);
+            //Assert.AreEqual(4, graph.GetEdges(1001805435).Count);
+
+            double edgeCost = graph.GetEdges(1001805435)[2].cost;
+            double multiplier = 3;
+            graph.ChangeEdgeCost(1001805435, multiplier);
+            Assert.AreEqual(edgeCost * multiplier, graph.GetEdges(1001805435)[2].cost);
+
+            edgeCost = graph.GetEdges(1001805435)[0].cost;
+            multiplier = 5;
+            graph.ChangeEdgeCost(1001805435, multiplier);
+            Assert.AreEqual(edgeCost * multiplier, graph.GetEdges(1001805435)[0].cost);
+        }
     }
 }

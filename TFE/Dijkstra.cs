@@ -14,7 +14,7 @@ namespace TFE
         public int totalNumberOfnodes;
         public int tookNodeNumber;
 
-        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 2*4000)
+        public Dijkstra(Graph graph, int ppriorityQueueMaxCapacity = 4000)
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
@@ -51,7 +51,7 @@ namespace TFE
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, State>();
         }
-        private double _Heuristics(Vertex nextNode, Vertex finalNode, double costToNextNode)
+        private double _Heuristics(Vertex nextNode, Vertex finalNode)
         {
             //  1.7111
             return GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode);
@@ -71,18 +71,19 @@ namespace TFE
         /// </returns>
         private double _CostEvaluation(Vertex nextNode,
                                        Vertex finalNode,
-                                       double totalCost,
                                        double costToNextNode, 
                                        bool withHeuristic,
-                                       int heuristicsWeight = 25)
+                                       State currentState)
         {
-            double g = totalCost + costToNextNode;
-            double h = withHeuristic ? _Heuristics(nextNode, finalNode, costToNextNode) : 0;
-            return totalCost + // Somme du coût des noeuds précédements visités, soit du chemin total.   
-                costToNextNode + // Le coût pour rejoindre le prochain noeud.
-                (withHeuristic ? _Heuristics(nextNode, finalNode, costToNextNode) : 0) //* heuristicsWeight
+            double g = currentState.costOnly + costToNextNode;
+            double h = withHeuristic ? _Heuristics(nextNode, finalNode) : 0;
+            return g + h;
+            /*
+            return currentState.costOnly + // Somme du coût des noeuds précédements visités, soit du chemin total.   
+                   costToNextNode + // Le coût pour rejoindre le prochain noeud.
+                   (withHeuristic ? _Heuristics(nextNode, finalNode, currentState.previousState == null ? 0 : currentState.previousState.heuristicCost) : 0) //* heuristicsWeight
                 //((withHeuristic ? GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) : 0)*0/1221.72) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
-                ;
+                    */;
         }
 
         public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withHeuristic = false)
@@ -107,12 +108,11 @@ namespace TFE
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
                 {
-                    double cost = _CostEvaluation(nextEdge.targetVertex, endNode, bestNode.cost, nextEdge.cost, withHeuristic);
+                    double cost = _CostEvaluation(nextEdge.targetVertex, endNode, nextEdge.cost, withHeuristic, bestNode.state);
                     _AddPriotiyQueueNode(cost,
                                         new State(cost,
                                                 nextEdge.targetVertex,
-                                                //bestNode.state.costSOnly + nextEdge.cost,
-                                                0,
+                                                bestNode.state.costOnly + nextEdge.cost,
                                                 bestNode.state)
                     );
                 }
@@ -123,7 +123,7 @@ namespace TFE
 
     public class State : FastPriorityQueueNode
     {
-        // Coût total (smme du cpupt des arêtes) pour atteindre le vertex qui sera ajouté à cet état.
+        // Coût total (smme du coût des arêtes) pour atteindre le vertex qui sera ajouté à cet état.
         public double totalCost { get; }
         public Vertex vertex { get; }
         // Etat précédant celui-ci qui permet de retrouvé la succession de vertices qui constituent le chemin. 
@@ -133,18 +133,21 @@ namespace TFE
         {
             get { return vertex.id; }
         }
-        public double costSOnly { get; } // todo : à enlever -> on prend seulement les totalCost en seconde 
+        //public double heuristicCost { get; } 
+        public double costOnly { get; } 
 
 
         public State(double ptotalCost,
                     Vertex pvertex,
-                    double pcostSOnly,
+                    //double pheuristicCost,
+                    double pcostOnly,
                     State ppreviousState = null)
         {
             totalCost = ptotalCost;
             vertex = pvertex;
             previousState = ppreviousState;
-            costSOnly = pcostSOnly;
+            costOnly = pcostOnly;
+          //  heuristicCost = pheuristicCost;
         }
     }
 

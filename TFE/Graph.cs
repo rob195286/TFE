@@ -21,14 +21,11 @@ namespace TFE
 
         private Vertex GetNode(int id, double lon, double lat)
         {
-            if (NodeExist(id))
+            if (!NodeExist(id))
             {
-                return GetNode(id);
+                AddNode(new Vertex(id, lon, lat));
             }
-            else
-            {
-                return new Vertex(id, lon, lat);
-            }
+            return GetNode(id);
         }
         private void CreateGraph(string filePath)
         {
@@ -41,12 +38,12 @@ namespace TFE
                     Vertex sourceNode = GetNode(way.source, way.x1, way.y1);
                     Vertex targetNode = GetNode(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length,
-                                         way.cost_s ?? 99999,
+                                         way.cost_s ?? 99999, // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                                          way.maxspeed_forward,
                                          way.maxspeed_backward,
                                          way.osm_id,
                                          way.tag_id,
-                                         way.one_way); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                                         way.one_way); 
                     // Sauvegarde l'arête dans le dictinnaire d'arêtes "_edges" pour pouvoir modifier leur coût.
                     _SaveEdge(edge);
                     //------------------------------- one way
@@ -68,8 +65,6 @@ namespace TFE
                         edge.targetVertex = sourceNode;
                         _SaveEdge(edge);
                     }
-                    AddNode(sourceNode);
-                    AddNode(targetNode);
                 }
             }
         }
@@ -81,13 +76,13 @@ namespace TFE
         /// <param name="edge"> Arête à ajouter dans le dictionnaire contenant toutes les arêtes. </param>
         private void _SaveEdge(Edge edge)
         {
-            if (_edges.ContainsKey(edge.osmID))
+            if (!_edges.ContainsKey(edge.osmID))
             {
-                _edges[edge.osmID].Add(edge);
+                _edges.Add(edge.osmID, new List<Edge>() { edge });
             }
             else
             {
-                _edges.Add(edge.osmID, new List<Edge>() { edge });
+                _edges[edge.osmID].Add(edge);
             }
         }
         public bool NodeExist(int id)
@@ -115,6 +110,15 @@ namespace TFE
                 Console.WriteLine("aucun vertex trouvé");// throw;
             }
             return vertex;
+        }
+        /// <summary>
+        ///     Fonction permettant de récupérer les arêtes liées à un identifiant OSM.
+        /// </summary>
+        /// <param name="osmID"> Identifiant OSM des arêtes qu'on voudrait récupérer. </param>
+        /// <returns> Renvois la liste d'arêtes lié à l'identifiant OSM passé en paramètre. </returns>
+        public List<Edge> GetEdges(int osmID)
+        {
+            return _edges[osmID];
         }
         public IEnumerable<Edge> GetNextEdges(int vertexID, int visitId)
         {

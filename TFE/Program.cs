@@ -36,8 +36,7 @@ namespace TFE
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
             Console.WriteLine("");
 
-
-           // LaunchDijkstraBenchmart(g);
+            LaunchDijkstraBenchmart(g);
 
             /*
             using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\routablePointFromDB.csv"))
@@ -84,7 +83,7 @@ namespace TFE
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
             Console.WriteLine("totalCost : " + r.Key);
-            Console.WriteLine("costSonly : " + r.Value.costSOnly);
+            Console.WriteLine("costOnly : " + r.Value.costOnly);
             Console.WriteLine("nbr de noeud pris de la queue : " + d.tookNodeNumber);
             Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
         }
@@ -97,27 +96,23 @@ namespace TFE
 
             sw.Start();
             DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
-
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
-
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
-
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
-            //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds / 1000);
 
             sw.Reset();
 
             sw.Start();
+            /*
             DijkstraBenchmark(g, sourceNodes, targetNodes, 50, true);
-
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
-
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
-            //DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 200, true);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 400, true);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 800, true);
+            */
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds / 1000);
         }
@@ -127,7 +122,7 @@ namespace TFE
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
-            string fileName = crowFliesActivate ? "Dijkstra_performances_with_crow.txt" : "Dijkstra_performances.txt";
+            string fileName = crowFliesActivate ? "Dijkstra_performances_with_heuristic.txt" : "Dijkstra_performances.txt";
             using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\"+ fileName))
             {
                 for (int iteration = 0; iteration < 1; iteration++)
