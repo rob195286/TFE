@@ -51,11 +51,6 @@ namespace TFE
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, State>();
         }
-        private double _Heuristics(Vertex nextNode, Vertex finalNode)
-        {
-            //  1.7111
-            return GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode);
-        }
         /// <summary>
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
         ///     Pour cela elle évalue les distances à vol d'oiseau entre différents noeuds.
@@ -75,15 +70,11 @@ namespace TFE
                                        bool withHeuristic,
                                        State currentState)
         {
-            double g = currentState.costOnly + costToNextNode;
-            double h = withHeuristic ? _Heuristics(nextNode, finalNode) : 0;
-            return g + h;
-            /*
-            return currentState.costOnly + // Somme du coût des noeuds précédements visités, soit du chemin total.   
-                   costToNextNode + // Le coût pour rejoindre le prochain noeud.
-                   (withHeuristic ? _Heuristics(nextNode, finalNode, currentState.previousState == null ? 0 : currentState.previousState.heuristicCost) : 0) //* heuristicsWeight
-                //((withHeuristic ? GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) : 0)*0/1221.72) // l'ajout de l'évaluation de la distance entre le noeud courant et le noeud target
-                    */;
+            // Somme du coût des noeuds précédements visités, soit du chemin total + le coût pour rejoindre le prochain noeud,
+            //  ce qui est l'équivaletn de la fonction G.
+            return currentState.costOnly + costToNextNode +
+                    // Ajout de l'évaluation de la distance entre le noeud courant et le noeud target, équivalent de la fonction H.
+                    (withHeuristic ? GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) : 0);
         }
 
         public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withHeuristic = false)

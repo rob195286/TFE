@@ -38,7 +38,8 @@ namespace TFE
                     Vertex sourceNode = GetNode(way.source, way.x1, way.y1);
                     Vertex targetNode = GetNode(way.target, way.x2, way.y2);
                     Edge edge = new Edge(way.length,
-                                         way.cost_s ?? 99999, // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                                         //way.cost_s ?? 99999, // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
+                                         way.cost, // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
                                          way.maxspeed_forward,
                                          way.maxspeed_backward,
                                          way.osm_id,
@@ -54,7 +55,8 @@ namespace TFE
                     if (way.one_way == 2 || way.one_way == 0)
                     {
                         edge = new Edge(way.length,
-                                        way.reverse_cost_s ?? 99999,
+                                        //way.reverse_cost_s ?? 99999,
+                                        way.reverse_cost,
                                         way.maxspeed_forward,
                                         way.maxspeed_backward,
                                         way.osm_id,

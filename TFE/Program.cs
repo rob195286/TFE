@@ -31,7 +31,7 @@ namespace TFE
             
             sw.Start();
             //dijkstra(d, idNodeSource, idNodeTarget, false);
-            dijkstra(d, idNodeSource, idNodeTarget, true);
+            //dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
             Console.WriteLine("");
@@ -93,12 +93,15 @@ namespace TFE
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
             FindRoutablePoint(g, sourceNodes, targetNodes);
-
+            int i = 0;
             sw.Start();
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 50);
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
+            for(i = 0; i < 5; i++)
+                DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
+            for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+            for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
+            for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds / 1000);
@@ -106,13 +109,14 @@ namespace TFE
             sw.Reset();
 
             sw.Start();
-            /*
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 50, true);
+            for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 200, true);
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 400, true);
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 800, true);
-            */
+            for(i = 0; i < 5; i++)
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
+            for(i = 0; i < 5; i++)
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
+            for(i = 0; i < 5; i++)
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds / 1000);
         }
