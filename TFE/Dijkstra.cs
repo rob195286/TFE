@@ -7,6 +7,7 @@ namespace TFE
 {
     public class Dijkstra
     {
+        //private Prio 
         private FastPriorityQueue<State> _queue;
         private Graph _graph;
         private int _priorityQueueMaxCapacity;
@@ -55,8 +56,8 @@ namespace TFE
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
         ///     Pour cela elle évalue les distances à vol d'oiseau entre différents noeuds.
         /// </summary>
-        /// <param name="nextNode"> Prend le prochain noeud du graphe, qui est celui où mène l'arête afin d'en récupérer les coordonnées géographiques. </param>
-        /// <param name="finalNode"> Prend le noeud cible à atteindre, le noeud final dont on veut connaître le plus court chemin. </param>
+        /// <param name="nextVertex"> Prend le prochain noeud du graphe, qui est celui où mène l'arête afin d'en récupérer les coordonnées géographiques. </param>
+        /// <param name="finalVertex"> Prend le noeud cible à atteindre, le noeud final dont on veut connaître le plus court chemin. </param>
         /// <param name="totalCost"> Prend le coût du noeud de la priority queue actuel, et donc le coup total qui a été parcouru jusqu'ici. </param>
         /// <param name="costSToNextNode"> Coût de l'arête menant au prochain noeud (nextNode). </param>
         /// <param name="withCrowFlies"> Option permettant de décider si on prend le temps à vol d'oiseau ou pas. </param>
@@ -64,34 +65,51 @@ namespace TFE
         ///      Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
         ///      La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
         /// </returns>
-        private double _CostEvaluation(Vertex nextNode,
-                                       Vertex finalNode,
-                                       double costToNextNode, 
+        private double _CostEvaluation(Vertex nextVertex,
+                                       Vertex finalVertex,
+                                       double costToNextVertex, 
                                        bool withHeuristic,
                                        State currentState)
         {
+            double g = currentState.costOnly + costToNextVertex;
+            double h = (withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(nextVertex, finalVertex) : 0);
+            if(h > 0.004820680447571207)
+            {
+                double wxxxxxxx = 0;
+            }
+            if(currentState.getVertexID == 154544 || currentState.getVertexID == 752587)
+            {
+                double wxxxxxxx = 0;
+            }
+            return g + h;
+            /*
             // Somme du coût des noeuds précédements visités, soit du chemin total + le coût pour rejoindre le prochain noeud,
             //  ce qui est l'équivaletn de la fonction G.
             return currentState.costOnly + costToNextNode +
                     // Ajout de l'évaluation de la distance entre le noeud courant et le noeud target, équivalent de la fonction H.
-                    (withHeuristic ? GeometricFunctions.EuclideanDistanceFromToInSecond(nextNode, finalNode) : 0);
+                    (withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(nextNode, finalNode) : 0);
+            */
         }
 
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceNodeID, int endNodeID, bool withHeuristic = false)
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int endVertexID, bool withHeuristic = false)
         {
-            if (!_graph.NodeExist(sourceNodeID) || !_graph.NodeExist(endNodeID)) 
-                return _NoPathFound(sourceNodeID, endNodeID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
+            if (!_graph.NodeExist(sourceVertexID) || !_graph.NodeExist(endVertexID)) 
+                return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
             lastVisitID++;
             _ClearQueue();
-            totalNumberOfnodes = 0;
-            _AddPriotiyQueueNode(0, new State(0, _graph.GetNode(sourceNodeID), 0, null));
-            Vertex endNode = _graph.GetNode(endNodeID);
+            totalNumberOfnodes = 0;            
             tookNodeNumber = 0;
+            Vertex sourceVertex = _graph.GetNode(sourceVertexID);
+            Vertex endVertex = _graph.GetNode(endVertexID);
+            State initalState = new State((withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(sourceVertex, endVertex) : 0), sourceVertex, 0, null);
+            double cost = _CostEvaluation(sourceVertex, endVertex, 0, withHeuristic, initalState);
+            _AddPriotiyQueueNode(cost, initalState);
+
             while (!_QueueIsEmpty())
             {
                 CostWithNode bestNode = _PopHeadPriorityQueue();
                 tookNodeNumber++;
-                if (bestNode.state.getVertexID == endNodeID)
+                if (bestNode.state.getVertexID == endVertexID)
                     return new KeyValuePair<double, State>(bestNode.cost, bestNode.state);
                 if (bestNode.state.vertex.lastVisit == lastVisitID) 
                     continue;
@@ -99,7 +117,7 @@ namespace TFE
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
                 {
-                    double cost = _CostEvaluation(nextEdge.targetVertex, endNode, nextEdge.cost, withHeuristic, bestNode.state);
+                    cost = _CostEvaluation(nextEdge.targetVertex, endVertex, nextEdge.cost, withHeuristic, bestNode.state);
                     _AddPriotiyQueueNode(cost,
                                         new State(cost,
                                                 nextEdge.targetVertex,
@@ -108,13 +126,13 @@ namespace TFE
                     );
                 }
             }
-            return _NoPathFound(sourceNodeID, endNodeID, Messages.NoPathFound);
+            return _NoPathFound(sourceVertexID, endVertexID, Messages.NoPathFound);
         }
     }
 
     public class State : FastPriorityQueueNode
     {
-        // Coût total (smme du coût des arêtes) pour atteindre le vertex qui sera ajouté à cet état.
+        // Coût total (somme du coût des arêtes) pour atteindre le vertex qui sera ajouté à cet état + l'heuristique.
         public double totalCost { get; }
         public Vertex vertex { get; }
         // Etat précédant celui-ci qui permet de retrouvé la succession de vertices qui constituent le chemin. 
@@ -124,13 +142,11 @@ namespace TFE
         {
             get { return vertex.id; }
         }
-        //public double heuristicCost { get; } 
         public double costOnly { get; } 
 
 
         public State(double ptotalCost,
                     Vertex pvertex,
-                    //double pheuristicCost,
                     double pcostOnly,
                     State ppreviousState = null)
         {
@@ -138,7 +154,6 @@ namespace TFE
             vertex = pvertex;
             previousState = ppreviousState;
             costOnly = pcostOnly;
-          //  heuristicCost = pheuristicCost;
         }
     }
 

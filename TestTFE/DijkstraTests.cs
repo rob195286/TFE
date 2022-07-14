@@ -48,6 +48,22 @@ namespace TestTFE.UnitTests
 
             idNodeTarget = 228385;
             Assert.AreEqual(1.7062054610490174, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, true).Key);
+            //------------------------------------------------------------------------------------------------------------
+            idNodeSource = 130225; // 15
+            idNodeTarget = 593276;
+            Assert.AreEqual(0.20098997875357846, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, true).Key);
+
+            idNodeSource = 742732; // 68
+            idNodeTarget = 519729;
+            Assert.AreEqual(0.6816443003014081, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, true).Key);
+
+            idNodeSource = 97337; // 1
+            idNodeTarget = 213071;
+            Assert.AreEqual(0.9742549125833831, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, true).Key);
+
+            idNodeSource = 354192; // 28
+            idNodeTarget = 912989;
+           // Assert.AreEqual(0.9501691769514861, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget, true).Key);
         }
         //[TestMethod]
         public void TestComputePathCost_s()
@@ -110,7 +126,23 @@ namespace TestTFE.UnitTests
 
             idNodeTarget = 228385;
             Assert.AreEqual(1.7062054610490174, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
-        }
+            //------------------------------------------------------------------------------------------------------------
+            idNodeSource = 130225; // 15
+            idNodeTarget = 593276;
+            Assert.AreEqual(0.20098997875357846, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+
+            idNodeSource = 742732; // 68
+            idNodeTarget = 519729;
+            Assert.AreEqual(0.6816443003014081, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+
+            idNodeSource = 97337; // 1
+            idNodeTarget = 213071;
+            Assert.AreEqual(0.9742549125833831, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+
+            idNodeSource = 354192; // 28
+            idNodeTarget = 912989;
+          //  Assert.AreEqual(0.9501691769514861, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+    }
 
         private int _ComputeNodeNUmber(State pqNode)
         {

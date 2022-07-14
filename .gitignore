@@ -366,3 +366,6 @@ MigrationBackup/
 FodyWeavers.xsd
 /ways.csv
 /path.csv
+/ways12.csv
+/ways22.csv
+*.csv
