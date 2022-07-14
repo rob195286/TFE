@@ -237,7 +237,7 @@ namespace TFE
                     string s = parser.ReadLine();
                     int csvid = Convert.ToInt32(s);
                     int idindex = idL[j++];
-                    Console.Write("csvid : " + csvid + " id : " + idindex + " -> == ");
+                    Console.Write("j+1 : "+j+ "    csvid : " + csvid + " id : " + idindex + " -> == ");
                     Console.Write(csvid == idindex);
                     if (csvid != idindex)
                     {

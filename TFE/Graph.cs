@@ -17,7 +17,7 @@ namespace TFE
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             CreateGraph(filePath);
-           // CreateGraph(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways22.csv");
+            // CreateGraph(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways22.csv");
         }
 
         private bool _AddNode(Vertex vertex)
@@ -34,11 +34,14 @@ namespace TFE
             int id = isSourceVertex ? csvRow.source : csvRow.target;
             double lon = isSourceVertex ? csvRow.x1 : csvRow.x2;
             double lat = isSourceVertex ? csvRow.y1 : csvRow.y2;
-            if (!NodeExist(id))
+            if (NodeExist(id))
             {
-                _AddNode(new Vertex(id, lon, lat));
+                return GetNode(id);
             }
-            return GetNode(id);
+            else
+            {
+                return new Vertex(id, lon, lat);
+            }
         }
         /// <summary>
         ///     Fonction sauvegardant l'arête passée en paramètre en créant une nouvelle liste d'arêtes si 
@@ -95,21 +98,19 @@ namespace TFE
                     //------------------------------- two way
                     if (way.one_way == 2 || way.one_way == 0)
                     {
-                        edge = _GetEdge(way, false); 
+                        edge = _GetEdge(way, false);
                         targetNode.AddOutgoingEdge(edge);
                         edge.sourceVertex = targetNode;
                         edge.targetVertex = sourceNode;
                     }
+                    _AddNode(sourceNode);
+                    _AddNode(targetNode);
                 }
             }
-        }       
+        }
         public bool NodeExist(int id)
         {
             return _vertices.ContainsKey(id);
-        }        
-        public bool EdgeExistaaaaaa(Edge edge)
-        {
-            return false;// EdgeExist(edge.osmID);
         }
         public bool EdgeExist(Edge edge)
         {
@@ -257,7 +258,7 @@ namespace TFE
             oneWay = poneWay;
         }
 
-       
+
         public override string ToString()
         {
             return "edge info :" +

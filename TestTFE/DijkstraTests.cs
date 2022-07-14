@@ -141,7 +141,7 @@ namespace TestTFE.UnitTests
 
             idNodeSource = 354192; // 28
             idNodeTarget = 912989;
-          //  Assert.AreEqual(0.9501691769514861, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
+            Assert.AreEqual(0.9501691769514861, dijkstra.ComputeShortestPath(idNodeSource, idNodeTarget).Key);
     }
 
         private int _ComputeNodeNUmber(State pqNode)
