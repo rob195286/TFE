@@ -29,23 +29,17 @@ namespace TFE
         /// </summary>
         /// <param name="currentNode"></param>
         /// <param name="targetNode"></param>
-        /// <param name="carSpeed"></param>
+        /// <param name="heuristicFactor"></param>
         /// <returns>
-        ///     Retourne le temps en secondes.
+        ///     Retourne le coût équivalent au .
         /// </returns>
-        public static double EuclideanDistanceCostFromTo(Vertex currentNode, Vertex targetNode, double heuristicFactor = 111.257)
+        public static double EuclideanDistanceCostFromTo(Vertex currentNode, Vertex targetNode, double heuristicFactor = 0.008988227930074038)
         {
-            // vitesse pour cost_s = 133.2
-            /// <summary>
-            ///     speed km/h = speed/3600 km/s            
-            /// </summary>
-            //double carSpeedInKm_S = carSpeed / 3600;
-            // heuristicFactor *= 9900;
-            //heuristicFactor = 0.008988227930074038;
+            //heuristicFactor = 111257;
             return Haversine(currentNode.latitude,
                             currentNode.longitude,
                             targetNode.latitude,
-                            targetNode.longitude) / heuristicFactor;// carSpeedInKm_S;
+                            targetNode.longitude) * heuristicFactor;
         }
     }
 }

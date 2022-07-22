@@ -52,6 +52,10 @@ namespace TFE
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, State>();
         }
+        private bool _VertexHasBeenVisited(CostWithNode node)
+        {
+            return node.state.vertex.lastVisit == lastVisitID;
+        }
         /// <summary>
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
         ///     Pour cela elle évalue les distances à vol d'oiseau entre différents noeuds.
@@ -71,39 +75,27 @@ namespace TFE
                                        bool withHeuristic,
                                        State currentState)
         {
-            double g = currentState.costOnly + costToNextVertex;
-            double h = (withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(nextVertex, finalVertex) : 0);
-            if(h > 0.004820680447571207)
-            {
-                double wxxxxxxx = 0;
-            }
-            if(currentState.getVertexID == 154544 || currentState.getVertexID == 752587)
-            {
-                double wxxxxxxx = 0;
-            }
-            return g + h;
-            /*
             // Somme du coût des noeuds précédements visités, soit du chemin total + le coût pour rejoindre le prochain noeud,
             //  ce qui est l'équivaletn de la fonction G.
-            return currentState.costOnly + costToNextNode +
+            return currentState.costOnly + costToNextVertex +
                     // Ajout de l'évaluation de la distance entre le noeud courant et le noeud target, équivalent de la fonction H.
-                    (withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(nextNode, finalNode) : 0);
-            */
+                    (withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(nextVertex, finalVertex) : 0);
         }
 
         public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int endVertexID, bool withHeuristic = false)
         {
-            if (!_graph.NodeExist(sourceVertexID) || !_graph.NodeExist(endVertexID)) 
+            if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID)) 
                 return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
             lastVisitID++;
             _ClearQueue();
             totalNumberOfnodes = 0;            
             tookNodeNumber = 0;
-            Vertex sourceVertex = _graph.GetNode(sourceVertexID);
-            Vertex endVertex = _graph.GetNode(endVertexID);
+            Vertex sourceVertex = _graph.GetVertex(sourceVertexID);
+            Vertex endVertex = _graph.GetVertex(endVertexID);
             State initalState = new State((withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(sourceVertex, endVertex) : 0), sourceVertex, 0, null);
             double cost = _CostEvaluation(sourceVertex, endVertex, 0, withHeuristic, initalState);
             _AddPriotiyQueueNode(cost, initalState);
+            //Dictionary<int, State> bestPaths = new Dictionary<int, State>();
 
             while (!_QueueIsEmpty())
             {
@@ -111,9 +103,11 @@ namespace TFE
                 tookNodeNumber++;
                 if (bestNode.state.getVertexID == endVertexID)
                     return new KeyValuePair<double, State>(bestNode.cost, bestNode.state);
-                if (bestNode.state.vertex.lastVisit == lastVisitID) 
-                    continue;
-                bestNode.state.vertex.lastVisit = lastVisitID;                
+                if (_VertexHasBeenVisited(bestNode))
+                {
+                        continue;
+                }
+                bestNode.state.vertex.lastVisit = lastVisitID;
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
                 {
@@ -123,7 +117,7 @@ namespace TFE
                                                 nextEdge.targetVertex,
                                                 bestNode.state.costOnly + nextEdge.cost,
                                                 bestNode.state)
-                    );
+                                        );
                 }
             }
             return _NoPathFound(sourceVertexID, endVertexID, Messages.NoPathFound);

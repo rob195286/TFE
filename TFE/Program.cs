@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 
 
@@ -18,10 +19,10 @@ namespace TFE
             //int idNodeTarget = 597177;
             //idNodeSource = 193183; // p1 bxl
             // idNodeTarget = 778238; // p2 bxl
-            idNodeSource = 354192;
+            //idNodeSource = 354192;
+            //idNodeTarget = 912989;
+            idNodeSource = 354192; // 15
             idNodeTarget = 912989;
-           // idNodeSource = 354192; // 28
-          //  idNodeTarget = 912989;
 
 
             Stopwatch sw = new Stopwatch();
@@ -42,6 +43,7 @@ namespace TFE
             // LaunchDijkstraBenchmart(g);
 
             //CompareNAndH(g);
+          //  CompareHtoPg(g);
         }
 
         static void dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget, bool withCrowFliesOption = false)
@@ -160,11 +162,11 @@ namespace TFE
                         flag = false;
                         continue;
                     }
-                    if (graph.NodeExist(Convert.ToInt32(x[1])))
+                    if (graph.VertexExist(Convert.ToInt32(x[1])))
                     {
                         sourceNodes.Add(Convert.ToInt32(x[1]));
                     }
-                    if (graph.NodeExist(Convert.ToInt32(x[2])))
+                    if (graph.VertexExist(Convert.ToInt32(x[2])))
                     {
                         targetNodes.Add(Convert.ToInt32(x[2]));
                     }
@@ -197,8 +199,42 @@ namespace TFE
             Console.WriteLine("error : "+error);
             Console.WriteLine(isOk);
         }
+        static void CompareHtoPg(Graph g)
+        {
+            int idsource = 876837;
+            bool isOk = true;
+            Dijkstra dj = new Dijkstra(g);
+           // List<int> targetNodes = new List<int>();
+            //FindRoutablePoint(g, new List<int>(), targetNodes);
+            int error = 0;
 
-        static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
+            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\costs.csv"))
+            {
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(", ");
+                parser.ReadLine();
+                int j = 0;
+                while (!parser.EndOfData)
+                {
+                    // if (j >= targetNodes.Count)
+                    //    break;
+                    string[] s = parser.ReadLine().Split(',');
+                    double csvCost = Convert.ToDouble(s[0], CultureInfo.InvariantCulture);
+                    int csvVertexID = Convert.ToInt32(s[1]);
+                    double costH = dj.ComputeShortestPath(idsource, csvVertexID, true).Key;
+                    if (csvCost != costH)
+                    {
+                        error++;
+                        isOk = false;
+                        Console.WriteLine("nok - "+ "csvCost : " + csvCost + "   costH : "+costH + "|| csvVertexID : "+ csvVertexID);
+                    }
+                }
+                Console.WriteLine("error : ",error);
+                Console.WriteLine(isOk);
+            }
+        }
+        static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, 
+                                            string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
         {
             var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
             State state = r.Value;
@@ -237,7 +273,7 @@ namespace TFE
                     string s = parser.ReadLine();
                     int csvid = Convert.ToInt32(s);
                     int idindex = idL[j++];
-                    Console.Write("j+1 : "+j+ "    csvid : " + csvid + " id : " + idindex + " -> == ");
+                    Console.Write("j : "+j+ "    csvid : " + csvid + " id : " + idindex + " -> == ");
                     Console.Write(csvid == idindex);
                     if (csvid != idindex)
                     {

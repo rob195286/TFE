@@ -20,28 +20,33 @@ namespace TFE
             // CreateGraph(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways22.csv");
         }
 
-        private bool _AddNode(Vertex vertex)
+        private bool _AddVertex(Vertex vertex)
         {
-            if (!NodeExist(vertex.id))// éviter d'ajouter 2x la même key et d'avoir une exception
+           if (!VertexExist(vertex.id))// todo : éviter d'ajouter 2x la même key et d'avoir une exception
             {
-                _vertices.Add(vertex.id, vertex);
+               _vertices.Add(vertex.id, vertex);
                 return true;
             }
             return false;
         }
-        private Vertex GetNode(CSVwayData csvRow, bool isSourceVertex)
+        private Vertex GetVertex(CSVwayData csvRow, bool isSourceVertex)
         {
             int id = isSourceVertex ? csvRow.source : csvRow.target;
             double lon = isSourceVertex ? csvRow.x1 : csvRow.x2;
             double lat = isSourceVertex ? csvRow.y1 : csvRow.y2;
-            if (NodeExist(id))
+            
+            if (VertexExist(id))
             {
-                return GetNode(id);
+                return GetVertex(id);
             }
-            else
+            
+            /*
+            if (!VertexExist(id))
             {
-                return new Vertex(id, lon, lat);
+                _AddVertex(new Vertex(id, lon, lat));
             }
+            return GetVertex(id);*/
+            return new Vertex(id, lon, lat);
         }
         /// <summary>
         ///     Fonction sauvegardant l'arête passée en paramètre en créant une nouvelle liste d'arêtes si 
@@ -63,7 +68,7 @@ namespace TFE
             }
             return false;
         }
-        private Edge _GetEdge(CSVwayData csvRow, bool isForwardEdge)
+        private Edge _GetEdge(CSVwayData csvRow, bool isForwardEdge, Vertex vSource, Vertex vTarget)
         {
             Edge edge = new Edge(csvRow.length,
                                 //way.cost_s ?? 99999, // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
@@ -73,12 +78,15 @@ namespace TFE
                                 csvRow.osm_id,
                                 csvRow.tag_id,
                                 csvRow.one_way);
+            edge.sourceVertex = isForwardEdge ? vSource : vTarget;
+            edge.targetVertex = isForwardEdge ? vTarget : vSource;
             if (!EdgeExist(edge))
             {
                 // Sauvegarde l'arête dans le dictinnaire d'arêtes "_edges" pour pouvoir modifier leur coût.
                 _AddEdge(edge);
+                return edge;
             }
-            return edge;
+            return GetEdge(csvRow.osm_id, csvRow.source, csvRow.target, isForwardEdge ? csvRow.cost : csvRow.reverse_cost);
         }
         private void CreateGraph(string filePath)
         {
@@ -87,28 +95,30 @@ namespace TFE
             {   // Permet d'ajouter des champs null car certaines valeurs dans la base de données le sont.
                 csv.Context.TypeConverterOptionsCache.GetOptions<double?>().NullValues.Add("NULL");
                 foreach (CSVwayData way in csv.GetRecords<CSVwayData>())
-                {   // Créer ou récupère les vertices et arêtes à partir des données récupérées de la ligne du fichier CSV.
-                    Vertex sourceNode = GetNode(way, true);
-                    Vertex targetNode = GetNode(way, false);
-                    Edge edge = _GetEdge(way, true);
+                {   // Créer ou récupère les vertices et arêtes à partir des données de la ligne du fichier CSV.
+                    if(way.gid == 736)
+                    {
+                        bool test = true;
+                    }
+                    Vertex sourceNode = GetVertex(way, true);
+                    Vertex targetNode = GetVertex(way, false);
+                    Edge edge = _GetEdge(way, true, sourceNode, targetNode);
                     //------------------------------- one way
-                    sourceNode.AddOutgoingEdge(edge);
-                    edge.sourceVertex = sourceNode;
-                    edge.targetVertex = targetNode;
+                    sourceNode.AddOutgoingEdge(edge);                    
                     //------------------------------- two way
                     if (way.one_way == 2 || way.one_way == 0)
                     {
-                        edge = _GetEdge(way, false);
+                        edge = _GetEdge(way, false, sourceNode, targetNode);
                         targetNode.AddOutgoingEdge(edge);
-                        edge.sourceVertex = targetNode;
-                        edge.targetVertex = sourceNode;
-                    }
-                    _AddNode(sourceNode);
-                    _AddNode(targetNode);
+                      //  edge.sourceVertex = targetNode;
+                      //  edge.targetVertex = sourceNode;
+                    }                
+                    _AddVertex(sourceNode);
+                    _AddVertex(targetNode);
                 }
             }
         }
-        public bool NodeExist(int id)
+        public bool VertexExist(int id)
         {
             return _vertices.ContainsKey(id);
         }
@@ -120,18 +130,19 @@ namespace TFE
             }
             else { return false; }
         }
-        public Vertex GetNode(int vertexID)
+        public Vertex GetVertex(int vertexID)
         {
-            Vertex vertex = null; // todo : voir comment gére exception
-            try
-            {
-                vertex = _vertices[vertexID];
-            }
-            catch (KeyNotFoundException)
-            {
-                Console.WriteLine("aucun vertex trouvé");// throw;
-            }
-            return vertex;
+            //Vertex vertex = null; // todo : voir comment gére exception
+           // try
+           // {
+                //vertex = _vertices[vertexID];
+                return _vertices[vertexID];
+           // }
+            //catch (KeyNotFoundException)
+           // {
+                //Console.WriteLine("aucun vertex trouvé");// throw;
+           // }
+           // return vertex;
         }
         /// <summary>
         ///     Fonction permettant de récupérer les arêtes liées à un identifiant OSM.
@@ -141,12 +152,21 @@ namespace TFE
         public List<Edge> GetEdges(int osmID)
         {
             return _edges[osmID];
+        } 
+        public Edge GetEdge(int osmID, int vertexSourceID, int vertexTargetID, double cost)
+        {
+            foreach (Edge edge in GetEdges(osmID))
+            {
+                if (edge.sourceVertex.id == vertexSourceID && edge.targetVertex.id == vertexTargetID && edge.cost == cost)
+                    return edge;
+            }
+            return null;
         }
         public IEnumerable<Edge> GetNextEdges(int vertexID, int visitId)
         {
-            foreach (Edge edge in GetNode(vertexID).outgoingEdges)
+            foreach (Edge edge in GetVertex(vertexID).outgoingEdges)
             {
-                if (edge.targetVertex.lastVisit != visitId && edge.cost >= 0)
+                if (edge.cost >= 0 && edge.targetVertex.lastVisit != visitId)
                 {
                     yield return edge;
                 }
@@ -157,10 +177,10 @@ namespace TFE
         /// </summary>
         /// <param name="nodeID"> Id du noeud à partir duquel on veut trouver ses voisins. </param>
         /// <returns> Retourne une liste de noeuds contenant l'nsemble des noeuds voisins. </returns>
-        public List<Vertex> GetNextNodes(int vertexID)
+        public List<Vertex> GetNextVertices(int vertexID)
         {
             List<Vertex> nodes = new List<Vertex>();
-            foreach (Edge edge in GetNode(vertexID).outgoingEdges)
+            foreach (Edge edge in GetVertex(vertexID).outgoingEdges)
             {
                 nodes.Add(edge.targetVertex);
             }
