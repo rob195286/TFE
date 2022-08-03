@@ -81,11 +81,13 @@ namespace TestTFE.UnitTests
         [TestMethod]
         public void TestChangeEdgeCost()
         {
-            double edgeCost = graph.GetEdges(1001805435).Find(e=> e.sourceVertex.id == 797530).cost;
+            long osmID = 1001805435;
+            double edgeCost = graph.GetEdges(osmID).Find(e => e.sourceVertex.id == 797530).cost;
+            double edgeCost2 = graph.GetEdges(osmID).Find(e => e.sourceVertex.id == 1053779).cost;
             double multiplier = 3;
-            graph.ChangeEdgeCost(1001805435, multiplier);
-            Assert.AreEqual(edgeCost * multiplier, graph.GetEdges(1001805435).Find(e => e.sourceVertex.id == 797530).cost);
-            Assert.AreEqual(edgeCost * multiplier, graph.GetEdges(1001805435).Find(e => e.sourceVertex.id == 1053779).cost);
+            graph.ChangeEdgeCost(osmID, multiplier);
+            Assert.AreEqual(edgeCost * multiplier, graph.GetEdges(osmID).Find(e => e.sourceVertex.id == 797530).cost);
+            Assert.AreEqual(edgeCost2 * multiplier, graph.GetEdges(osmID).Find(e => e.sourceVertex.id == 1053779).cost);
 
             edgeCost = graph.GetEdges(1001805435).Find(e => e.sourceVertex.id == 1053779).cost;
             multiplier = 5;
@@ -109,9 +111,9 @@ namespace TestTFE.UnitTests
         public void TestEdgeExist()
         {
             Assert.AreEqual(false, graph.EdgeExist(new Edge(0, 0, 0, 0, 264951447, 0, 0)));
-            Assert.AreEqual(false, graph.EdgeExist(new Edge(0,0,0,0,0,0,0)));
+            Assert.AreEqual(false, graph.EdgeExist(new Edge(0, 0, 0, 0, 0, 0, 0)));
             graph._AddEdge(new Edge(0, 0, 0, 0, 0, 0, 0));
-            Assert.AreEqual(true, graph.EdgeExist(new Edge(0,0,0,0,0,0,0)));
+            Assert.AreEqual(true, graph.EdgeExist(new Edge(0, 0, 0, 0, 0, 0, 0)));
             Assert.AreEqual(true, graph.EdgeExist(graph.GetEdges(264951447)[0]));
         }
 
@@ -124,7 +126,35 @@ namespace TestTFE.UnitTests
             fakeEdge.targetVertex = new Vertex(744271, 0, 0);
             graph._AddEdge(fakeEdge);
             Assert.AreEqual(true, graph.GetEdge(0, 154544, 744271, 0) != null);
+            //-------------------------------------------------------------------  Par osm
+            Assert.AreEqual(4, graph.GetEdges(197576).Count);
+            Assert.AreEqual(4, graph.GetEdges(212824).Count);
+            Assert.AreEqual(18, graph.GetEdges(3328699).Count);
         }
 
+        [TestMethod]
+        public void TestAllFeatures()
+        {
+            Assert.AreEqual(673523, graph._edges.Keys.Count); // SELECT distinct(osm_id) FROM ways
+
+            int targetNotInSource = 119501;// SELECT distinct(target) FROM ways WHERE target not in(SELECT distinct(source) FROM ways)
+            int source = 938111; // SELECT distinct(source) FROM ways;
+            Assert.AreEqual(targetNotInSource + source, graph._vertices.Count);
+
+            int j = 0;
+            foreach (KeyValuePair<long, List<Edge>> keyval in graph._edges)
+            {
+                foreach (Edge e in keyval.Value)
+                {
+                    j++;
+                }
+            }
+            long oneway = 1250600; // SELECT count(gid) FROM ways;
+            long twoway = 1019482; // SELECT count(gid) FROM ways WHERE one_way != 1 ;
+            long sum = oneway + twoway;
+            Assert.AreEqual(oneway, graph.nombre_ways_oneway);
+            Assert.AreEqual(twoway, graph.nombre_ways_twoway);
+            Assert.AreEqual(sum, j);
+        }
     }
 }

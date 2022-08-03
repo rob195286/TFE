@@ -1,14 +1,13 @@
-﻿using Priority_Queue; // https://github.com/BlueRaja/High-CarSpeed-Priority-Queue-for-C-Sharp/wiki/Using-the-FastPriorityQueue
-using System;
+﻿using System;
 using System.Collections.Generic;
-
+using Priority_Queue;
 
 namespace TFE
 {
     public class Dijkstra
     {
-        //private Prio 
-        private FastPriorityQueue<State> _queue;
+       // private FastPriorityQueue<State> _queue;
+        private PriorityQueue<State, double> _queue;
         private Graph _graph;
         private int _priorityQueueMaxCapacity;
         public int lastVisitID = 0;
@@ -19,7 +18,8 @@ namespace TFE
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
-            _queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
+            //_queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
+            _queue = new PriorityQueue<State, double>(_priorityQueueMaxCapacity);
         }
 
         private CostWithNode _PopHeadPriorityQueue()
@@ -30,13 +30,13 @@ namespace TFE
         private void _AddPriotiyQueueNode(double cost, State state)
         {
             totalNumberOfnodes++;
-            if(_queue.Count >= 12000) throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
-            if (_queue.Count >= _priorityQueueMaxCapacity-1)
+            if (_queue.Count >= 12000) throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
+            if (_queue.Count >= _priorityQueueMaxCapacity - 1)
             {
                 Console.WriteLine(Messages.MaxPQcapacity);
                 throw new ArgumentOutOfRangeException(Messages.MaxPQcapacity);
             }
-            _queue.Enqueue(state, (float)cost);  
+            _queue.Enqueue(state, cost);
         }
         private void _ClearQueue()
         {
@@ -52,9 +52,9 @@ namespace TFE
             Console.WriteLine($"Noeud source : {sourceNodeID}, noeud de destination : {targetNodeID}");
             return new KeyValuePair<double, State>();
         }
-        private bool _VertexHasBeenVisited(CostWithNode node)
+        private bool _VertexHasBeenVisited(Vertex vertex)
         {
-            return node.state.vertex.lastVisit == lastVisitID;
+            return vertex.lastVisit == lastVisitID;
         }
         /// <summary>
         ///     Fonction ayant pour objectif d'évaluer le coût d'un noeud à ajouter dans la PQ. 
@@ -68,12 +68,12 @@ namespace TFE
         /// <returns> 
         ///      Retourne l'évaluation sur le noeud actuel (sur lequel on est en train d'itérer et qui est normalement en tête de la PQ) pour en évaluer le coût par rapport au noeuds target. 
         ///      La valeur retournée, le coût, est une distance qui s'exprime en Km à vol d'oiseau entre le noeud courant fournit et le noeud qu'on veut atteindre au départ.
-        /// </returns>
+        /// </returns>   
         private double _CostEvaluation(Vertex nextVertex,
-                                       Vertex finalVertex,
-                                       double costToNextVertex, 
-                                       bool withHeuristic,
-                                       State currentState)
+                                        Vertex finalVertex,
+                                        double costToNextVertex,
+                                        bool withHeuristic,
+                                        State currentState)
         {
             // Somme du coût des noeuds précédements visités, soit du chemin total + le coût pour rejoindre le prochain noeud,
             //  ce qui est l'équivaletn de la fonction G.
@@ -82,36 +82,76 @@ namespace TFE
                     (withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(nextVertex, finalVertex) : 0);
         }
 
-        public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int endVertexID, bool withHeuristic = false)
+        public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int endVertexID, bool x = false)
         {
-            if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID)) 
-                return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
+            // if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID))
+            //    return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
             lastVisitID++;
             _ClearQueue();
-            totalNumberOfnodes = 0;            
+            totalNumberOfnodes = 0;
             tookNodeNumber = 0;
             Vertex sourceVertex = _graph.GetVertex(sourceVertexID);
             Vertex endVertex = _graph.GetVertex(endVertexID);
-            State initalState = new State((withHeuristic ? GeometricFunctions.EuclideanDistanceCostFromTo(sourceVertex, endVertex) : 0), sourceVertex, 0, null);
-            double cost = _CostEvaluation(sourceVertex, endVertex, 0, withHeuristic, initalState);
-            _AddPriotiyQueueNode(cost, initalState);
-            //Dictionary<int, State> bestPaths = new Dictionary<int, State>();
+            double cost;
+            _AddPriotiyQueueNode(0, new State(0, sourceVertex, 0));
 
             while (!_QueueIsEmpty())
             {
                 CostWithNode bestNode = _PopHeadPriorityQueue();
                 tookNodeNumber++;
                 if (bestNode.state.getVertexID == endVertexID)
-                    return new KeyValuePair<double, State>(bestNode.cost, bestNode.state);
-                if (_VertexHasBeenVisited(bestNode))
-                {
-                        continue;
-                }
+                { return new KeyValuePair<double, State>(bestNode.cost, bestNode.state); }
+
+                if (_VertexHasBeenVisited(bestNode.state.vertex))
+                { continue; }
+
                 bestNode.state.vertex.lastVisit = lastVisitID;
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
                 {
-                    cost = _CostEvaluation(nextEdge.targetVertex, endVertex, nextEdge.cost, withHeuristic, bestNode.state);
+                    cost = _CostEvaluation(nextEdge.targetVertex, endVertex, nextEdge.cost, false, bestNode.state);
+                    _AddPriotiyQueueNode(cost,
+                                        new State(cost,
+                                                nextEdge.targetVertex,
+                                                bestNode.state.costOnly + nextEdge.cost,
+                                                bestNode.state)
+                                        );
+                }
+            }
+            return _NoPathFound(sourceVertexID, endVertexID, Messages.NoPathFound);
+        }
+
+        public KeyValuePair<double, State> ComputeShortestPathWithHeuristic(int sourceVertexID, int endVertexID, bool withHeuristic = false)
+        {
+            //  if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID)) 
+            //    return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
+            lastVisitID++;
+            _ClearQueue();
+            totalNumberOfnodes = 0;
+            tookNodeNumber = 0;
+            Vertex sourceVertex = _graph.GetVertex(sourceVertexID);
+            Vertex endVertex = _graph.GetVertex(endVertexID);
+            State initalState = new State(0, sourceVertex, 0);
+            double cost = _CostEvaluation(sourceVertex, endVertex, 0, true, initalState);
+            _AddPriotiyQueueNode(cost, initalState);
+            Dictionary<int, State> bestPaths = new Dictionary<int, State>();
+
+            while (!_QueueIsEmpty())
+            {
+                CostWithNode bestNode = _PopHeadPriorityQueue();
+                tookNodeNumber++;
+                if (bestNode.state.getVertexID == endVertexID)
+                { return new KeyValuePair<double, State>(bestNode.cost, bestNode.state); }
+
+                if (_VertexHasBeenVisited(bestNode.state.vertex))
+                { continue; }
+
+                else { bestPaths.Add(bestNode.state.getVertexID, bestNode.state); }
+                bestNode.state.vertex.lastVisit = lastVisitID;
+
+                foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
+                {
+                    cost = _CostEvaluation(nextEdge.targetVertex, endVertex, nextEdge.cost, true, bestNode.state);
                     _AddPriotiyQueueNode(cost,
                                         new State(cost,
                                                 nextEdge.targetVertex,
@@ -136,7 +176,7 @@ namespace TFE
         {
             get { return vertex.id; }
         }
-        public double costOnly { get; } 
+        public double costOnly { get; }
 
 
         public State(double ptotalCost,
@@ -151,7 +191,8 @@ namespace TFE
         }
     }
 
-    internal struct CostWithNode{
+    internal struct CostWithNode
+    {
         public double cost { get; }
         public State state { get; }
 

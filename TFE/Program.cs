@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using CsvHelper;
+using CsvHelper.Configuration.Attributes;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,29 +23,31 @@ namespace TFE
             // idNodeTarget = 778238; // p2 bxl
             //idNodeSource = 354192;
             //idNodeTarget = 912989;
-            idNodeSource = 354192; // 15
-            idNodeTarget = 912989;
-
+            idNodeSource = 930177; // 15
+            idNodeTarget = 976710;
+            idNodeSource = 1315; // 15
+            idNodeTarget = 318262;
+            idNodeSource = 130225; // 15
+            idNodeTarget = 593276;
 
             Stopwatch sw = new Stopwatch();
 
             Console.WriteLine("debut du graph");
             Graph g = new Graph();
             Console.WriteLine("fin du graph");
+           
+          //  Test(g);
 
             var d = new Dijkstra(g);
 
             sw.Start();
-           // dijkstra(d, idNodeSource, idNodeTarget, false);
-           // dijkstra(d, idNodeSource, idNodeTarget, true);
+          //  dijkstra(d, idNodeSource, idNodeTarget, false);
+            // dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
             Console.WriteLine("");
-            printRoadNameEquality(g, idNodeSource, idNodeTarget);
-            // LaunchDijkstraBenchmart(g);
-
-            //CompareNAndH(g);
-          //  CompareHtoPg(g);
+            //  printRoadNameEquality(g, idNodeSource, idNodeTarget);
+             LaunchDijkstraBenchmart(g);
         }
 
         static void dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget, bool withCrowFliesOption = false)
@@ -52,32 +56,32 @@ namespace TFE
 
             int i = 0;
             State state = r.Value;
-            List<KeyValuePair<Vertex, string>> id_RoadName = new List<KeyValuePair<Vertex, string>>();
+            List<Vertex> verticesPath = new List<Vertex>();
 
             state = r.Value;
             while (state != null)
             {
-                id_RoadName.Add(new KeyValuePair<Vertex, string>(state.vertex, ""));
+                verticesPath.Add(state.vertex);
                 state = state.previousState;
                 i++;
             }
-            
-            id_RoadName.Reverse();
+
+            verticesPath.Reverse();
             int j = 1;
-            foreach (KeyValuePair<Vertex, string> nodeNroadName in id_RoadName)
+            foreach (Vertex v in verticesPath)
             {
                 Console.Write(j++);
-                Console.Write(" vertex id : " + nodeNroadName.Key.id);
+                Console.Write(" vertex id : " + v.id);
                 //Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
-            }            
-            
+            }
+
             Console.WriteLine("------------------");
             Console.WriteLine("i : " + i);
             Console.WriteLine("totalCost : " + r.Key);
             Console.WriteLine("costOnly : " + r.Value.costOnly);
             //Console.WriteLine("nbr de noeud pris de la queue : " + d.tookNodeNumber);
-           // Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
+            //Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
         }
         static void LaunchDijkstraBenchmart(Graph g)
         {
@@ -87,31 +91,34 @@ namespace TFE
             FindRoutablePoint(g, sourceNodes, targetNodes);
             int i = 0;
             sw.Start();
-            /*           
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+            /*         
             for(i = 0; i < 5; i++)
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
+            for (i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
             for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000); 
-            */
+           
             for (i = 0; i < 5; i++)
-                DijkstraBenchmark(g, sourceNodes, targetNodes, 2433);
+                DijkstraBenchmark(g, sourceNodes, targetNodes, 2420);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds / 1000);
-
+            */
             sw.Reset();
 
             sw.Start();
+            
+           // for(i = 0; i < 5; i++)
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
             /*
-            for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
-            for(i = 0; i < 5; i++)
+           // for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
-            for(i = 0; i < 5; i++)
+          //  for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
+          //  for (i = 0; i < 5; i++)
+                DijkstraBenchmark(g, sourceNodes, targetNodes, 2420, true);
             */
-            for (i = 0; i < 5; i++)
-                DijkstraBenchmark(g, sourceNodes, targetNodes, 2433, true);
             sw.Stop();
             Console.WriteLine(sw.ElapsedMilliseconds / 1000);
         }
@@ -133,7 +140,10 @@ namespace TFE
                         //int randomInt = (int)(myRand.NextDouble()*numberOfRoutage);
                         int idsource = coordSource[routage];
                         int idTarget = coordTarget[routage];
-                        dj.ComputeShortestPath(idsource, idTarget, crowFliesActivate);
+                        if (!crowFliesActivate)
+                        { dj.ComputeShortestPath(idsource, idTarget, crowFliesActivate); }
+                        else
+                        { dj.ComputeShortestPathWithHeuristic(idsource, idTarget); }
                     }
                     sw.Stop();
                     stream.WriteLine("{");
@@ -196,15 +206,15 @@ namespace TFE
                     error++;
                 }
             }
-            Console.WriteLine("error : "+error);
+            Console.WriteLine("error : " + error);
             Console.WriteLine(isOk);
         }
         static void CompareHtoPg(Graph g)
         {
-            int idsource = 876837;
+            int idsource = 1315;
             bool isOk = true;
             Dijkstra dj = new Dijkstra(g);
-           // List<int> targetNodes = new List<int>();
+            // List<int> targetNodes = new List<int>();
             //FindRoutablePoint(g, new List<int>(), targetNodes);
             int error = 0;
 
@@ -224,16 +234,15 @@ namespace TFE
                     double costH = dj.ComputeShortestPath(idsource, csvVertexID, true).Key;
                     if (csvCost != costH)
                     {
-                        error++;
                         isOk = false;
-                        Console.WriteLine("nok - "+ "csvCost : " + csvCost + "   costH : "+costH + "|| csvVertexID : "+ csvVertexID);
+                        Console.WriteLine("nok : " + error++ + " - csvCost : " + csvCost + "   costH : " + costH + "|| csvVertexID : " + csvVertexID);
                     }
                 }
-                Console.WriteLine("error : ",error);
+                Console.WriteLine("error : " + error);
                 Console.WriteLine(isOk);
             }
         }
-        static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget, 
+        static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget,
                                             string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
         {
             var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
@@ -273,7 +282,7 @@ namespace TFE
                     string s = parser.ReadLine();
                     int csvid = Convert.ToInt32(s);
                     int idindex = idL[j++];
-                    Console.Write("j : "+j+ "    csvid : " + csvid + " id : " + idindex + " -> == ");
+                    Console.Write("j : " + j + "    csvid : " + csvid + " id : " + idindex + " -> == ");
                     Console.Write(csvid == idindex);
                     if (csvid != idindex)
                     {

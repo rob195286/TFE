@@ -15,7 +15,6 @@ namespace TestTFE.UnitTests
         [TestMethod]
         public void TestTimeAsCrowFlies()
         {
-            double heuristicValue = 111.257;
             node1 = new Vertex(1, 4.390396011887681, 50.84849603970693);
             node2 = new Vertex(2, 4.40755727599761, 50.83769071995793);
 
