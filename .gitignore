@@ -364,3 +364,8 @@ FodyWeavers.xsd
 /ways.csv
 /routablePointFromDB.csv
 /path.csv
+/ways_export.csv
+/way.csv
+/nodes.csv
+/gid.csv
+/costs.csv
