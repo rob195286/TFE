@@ -96,5 +96,30 @@ namespace TestTFE.UnitTests
             graph.ChangeEdgeCost(1001805435, multiplier);
             Assert.AreEqual(0.00004491603277117362 * multiplier, graph.GetEdges(1001805435)[0].cost);
         }
+
+        [TestMethod]
+        public void TestAllFeatures()
+        {
+            Assert.AreEqual(673523, graph._edges.Keys.Count); // SELECT distinct(osm_id) FROM ways
+
+            int targetNotInSource = 119501;// SELECT distinct(target) FROM ways WHERE target not in(SELECT distinct(source) FROM ways)
+            int source = 938111; // SELECT distinct(source) FROM ways;
+            Assert.AreEqual(targetNotInSource + source, graph._vertices.Count);
+
+            int j = 0;
+            foreach (KeyValuePair<long, List<Edge>> keyval in graph._edges)
+            {
+                foreach (Edge e in keyval.Value)
+                {
+                    j++;
+                }
+            }
+            long oneway = 1250600; // SELECT count(gid) FROM ways;
+            long twoway = 1019482; // SELECT count(gid) FROM ways WHERE one_way != 1 ;
+            long sum = oneway + twoway;
+            Assert.AreEqual(oneway, graph.nombre_ways_oneway);
+            Assert.AreEqual(twoway, graph.nombre_ways_twoway);
+            Assert.AreEqual(sum, j);
+        }
     }
 }

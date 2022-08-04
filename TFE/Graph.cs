@@ -10,13 +10,30 @@ namespace TFE
     public class Graph
     {
         // Ensemble de tous les vertices / noeuds qui consituent le graphe.
-        private Dictionary<int, Vertex> _vertices = new Dictionary<int, Vertex>() { };
+        public Dictionary<int, Vertex> _vertices = new Dictionary<int, Vertex>() { };
         // Ensemble de toutes les arêtes qui consituent le graphe.
-        private Dictionary<int, List<Edge>> _edges = new Dictionary<int, List<Edge>>() { }; 
+        public Dictionary<long, List<Edge>> _edges = new Dictionary<long, List<Edge>>() { };
+        public int nombre_ways_oneway = 0;
+        public int nombre_ways_twoway = 0;
 
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             _CreateGraph(filePath);
+        }
+
+        /// <summary>
+        ///     Fonction permettant d'ajouter un vertex dans le dictionnaire des vertices du graphe.
+        /// </summary>
+        /// <param name="vertex"> Vertex à ajouter au dictionnaire. </param>
+        /// <returns> Renvois true si le vertex a été ajouté, false sinon. </returns>
+        private bool _AddVertex(Vertex vertex)
+        {
+            if (!VertexExist(vertex.id))// todo : éviter d'ajouter 2x la même key et d'avoir une exception
+            {
+                _vertices.Add(vertex.id, vertex);
+                return true;
+            }
+            return false;
         }
         /// <summary>
         ///     Cette fonction permet d'obtenir un vertex, soit en le créant, soit en le récupérant du dictionnaire 
@@ -26,17 +43,47 @@ namespace TFE
         /// <param name="lon"> Longitude du vertex à créer, soit l'une de ses deux coordonnées de géolocalisation. </param>
         /// <param name="lat"> Latitude du vertex à créer, soit la deuxième coordonnées de géolocalisation. </param>
         /// <returns> Renvois le vertex créé ou celui trouvé dans le dictionnaire de vertex "_vertices". </returns>
-        private Vertex GetVertex(int id, double lon, double lat)
+        private Vertex GetVertex(CSVwayData csvRow, bool isSourceVertex)
         {
-            if (VertexExist(id))
+            int id = isSourceVertex ? csvRow.source : csvRow.target;
+            double lon = isSourceVertex ? csvRow.x1 : csvRow.x2;
+            double lat = isSourceVertex ? csvRow.y1 : csvRow.y2;
+            if (!VertexExist(id))
             {
-                return GetVertex(id);
+                _AddVertex(new Vertex(id, lon, lat));
+            }
+            return GetVertex(id);
+        }
+        /// <summary>
+        ///     Fonction sauvegardant l'arête passée en paramètre en créant une nouvelle liste d'arêtes si 
+        ///     son identifiant n'existe pas déjà dans le dictionnaire et en l'ajoutant à la liste si
+        ///     l'arête existe déjà.
+        /// </summary>
+        /// <param name="edge"> Arête à ajouter dans le dictionnaire contenant toutes les arêtes. </param>
+        public void _AddEdge(Edge edge)
+        {
+            if (!_edges.ContainsKey(edge.osmID))
+            {
+                _edges.Add(edge.osmID, new List<Edge>() { edge });
             }
             else
-            {   // Ajoute le vertex créé avant de le renvoyer.
-                AddVertex(new Vertex(id, lon, lat));
-                return GetVertex(id);
+            {
+                _edges[edge.osmID].Add(edge);
             }
+        }
+        private Edge _GetEdge(CSVwayData csvRow, Vertex vSource, Vertex vTarget, bool isForwardEdge)
+        {
+            Edge edge = new Edge(csvRow.length,
+                                isForwardEdge ? csvRow.cost : csvRow.reverse_cost,
+                                csvRow.maxspeed_forward,
+                                csvRow.maxspeed_backward,
+                                csvRow.osm_id,
+                                csvRow.tag_id,
+                                csvRow.one_way);
+            edge.sourceVertex = vSource;
+            edge.targetVertex = vTarget;
+            _AddEdge(edge);
+            return edge;
         }
         /// <summary>
         ///     Fonction qui se charge de créer le graphe en ajoutant les vertices et les arêtes qui le constituera
@@ -56,62 +103,27 @@ namespace TFE
                 csv.Context.TypeConverterOptionsCache.GetOptions<double?>().NullValues.Add("NULL"); 
                 foreach (CSVwayData way in csv.GetRecords<CSVwayData>())
                 {   // Créer ou récupère les vertices et arêtes à partir des données récupérées de la ligne du fichier CSV.
-                    Vertex sourceVertex = GetVertex(way.source, way.x1, way.y1);
-                    Vertex targetVertex = GetVertex(way.target, way.x2, way.y2);
-                    Edge edge = new Edge(way.length,
-                                         way.cost,
-                                         way.maxspeed_forward,
-                                         way.maxspeed_backward,
-                                         way.osm_id,
-                                         way.tag_id,
-                                         way.one_way); // way.cost_s on vérifie que le champ n'est pas null. S'il l'est, mieux vaut l'ignorer.
-                    // Sauvegarde l'arête dans le dictinnaire d'arêtes "_edges" pour pouvoir modifier leur coût.
-                    _SaveEdge(edge);
+                    Vertex sourceVertex = GetVertex(way, true);
+                    Vertex targetVertex = GetVertex(way, false);
+                    Edge edge = _GetEdge(way, sourceVertex, targetVertex, true);
                     //------------------------------- Partie gérant les arêtes correspondant à une route n'ayant qu'un seul sens (one way). 
                     // Ajout de l'arête créée en tant qu'arête sortante dans le vertex source (graphe normal).
                     sourceVertex.AddOutgoingEdge(edge);
                     // Ajout de l'arête créée en tant qu'arête sortante dans le vertex target (graphe inverse).
                     targetVertex.AddReverseOutgoingEdge(edge);
-                    // Liaison des arêtes au noeuds qu'elle uni.
-                    edge.sourceVertex = sourceVertex;
-                    edge.targetVertex = targetVertex;
                     //------------------------------- Partie gérant les arêtes correspondant à une route ayant deux sens de circulation. 
-                    if (way.one_way == 2 || way.one_way == 0)
+                    nombre_ways_oneway++;
+                    if (way.one_way != 1)
                     {   // Même principe que pour la création de l'arête dans le premier sens mais en lui affectant les valeurs du sens inverse (reverse_cost...).
-                        edge = new Edge(way.length,
-                                        way.reverse_cost,
-                                        way.maxspeed_forward,
-                                        way.maxspeed_backward,
-                                        way.osm_id,
-                                        way.tag_id,
-                                        way.one_way);
+                        nombre_ways_twoway++;
+                        edge = _GetEdge(way, targetVertex, sourceVertex, false);
                         // Même Principe que pour la partie ne gérant qu'un seul sens.
                         targetVertex.AddOutgoingEdge(edge);
                         sourceVertex.AddReverseOutgoingEdge(edge);
-                        edge.sourceVertex = targetVertex;
-                        edge.targetVertex = sourceVertex;
-                        _SaveEdge(edge);
                     }
                 }
             }
-        }
-        /// <summary>
-        ///     Fonction sauvegardant l'arête passée en paramètre en créant une nouvelle liste d'arêtes si 
-        ///     son identifiant n'existe pas déjà dans le dictionnaire et en l'ajoutant à la liste si
-        ///     l'arête existe déjà.
-        /// </summary>
-        /// <param name="edge"> Arête à ajouter dans le dictionnaire contenant toutes les arêtes. </param>
-        private void _SaveEdge(Edge edge)
-        {
-            if (_edges.ContainsKey(edge.osmID))
-            {
-                _edges[edge.osmID].Add(edge);
-            }
-            else
-            {
-                _edges.Add(edge.osmID, new List<Edge>() { edge });
-            }
-        }
+        }        
         /// <summary>
         ///     Fonction permettant de vérifier si un vertex existe ou pas dans le graphe.
         /// </summary>
@@ -120,20 +132,6 @@ namespace TFE
         public bool VertexExist(int id)
         {
             return _vertices.ContainsKey(id);
-        }
-        /// <summary>
-        ///     Fonction permettant d'ajouter un vertex dans le dictionnaire des vertices du graphe.
-        /// </summary>
-        /// <param name="vertex"> Vertex à ajouter au dictionnaire. </param>
-        /// <returns> Renvois true si le vertex a été ajouté, false sinon. </returns>
-        public bool AddVertex(Vertex vertex)
-        {   // Permet d'éviter d'ajouter 2 fois la même key et d'avoir une exception.
-            if (!VertexExist(vertex.id))
-            {
-                _vertices.Add(vertex.id, vertex);
-                return true;
-            }
-            return false;
         }
         /// <summary>
         ///     Fonction permettant d'obtenir un vertex contenu dans le graphe.
@@ -261,7 +259,7 @@ namespace TFE
     public class Edge
     {
         // Identifiant OSM de l'arête (il s'agit de la valeur "osm_id" dans la base de données).
-        public int osmID { get; private set; }
+        public long osmID { get; private set; }
         // Vertex d'où l'arête part (puisque le graphe est dirigé) pour mener au vertex suivant dans la recherche forward.
         public Vertex sourceVertex { get; set; } = new Vertex(-1, 0, 0);
         // Vertex d'où l'arête part (puisque le graphe est dirigé) pour mener au vertex précédent dans la recherche backward.
@@ -282,8 +280,8 @@ namespace TFE
         public Edge(double plength, 
                     double pcost,
                     int pmaxSpeedForward, 
-                    int pmaxSpeedBackward, 
-                    int posmID,
+                    int pmaxSpeedBackward,
+                    long posmID,
                     int ptagID, 
                     int poneWay
             )
@@ -346,7 +344,7 @@ namespace TFE
         [Index(15)]
         public int maxspeed_backward { get; set; }
         [Index(16)]
-        public int osm_id { get; set; }
+        public long osm_id { get; set; }
         [Index(17)]
         public int tag_id { get; set; }
     }

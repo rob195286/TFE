@@ -26,16 +26,17 @@ namespace TFE
             Console.WriteLine("------------------------------------------------------------------");
             //CompareVertexId(dijkstra, idNodeSource, idNodeTarget);
             sw.Start();
-            Dijkstra(dijkstra, idNodeSource, idNodeTarget);
+           // Dijkstra(dijkstra, idNodeSource, idNodeTarget);
             sw.Stop();
             Console.Write("temps : ");
             Console.WriteLine(sw.ElapsedMilliseconds);
-            /*
-            LaunchDijkstraBenchmart(g, 50);
+            
+           // LaunchDijkstraBenchmart(g, 50);
             LaunchDijkstraBenchmart(g, 100);
             LaunchDijkstraBenchmart(g, 250);
             LaunchDijkstraBenchmart(g, 500);
-            LaunchDijkstraBenchmart(g, 1000);*/
+            LaunchDijkstraBenchmart(g, 1000);
+            LaunchDijkstraBenchmart(g, 2420);
         }
 
         static void Dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget)

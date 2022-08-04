@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualBasic.FileIO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using TFE;
 
@@ -68,6 +69,29 @@ namespace TestTFE.UnitTests
                 i++;
             }
             return i;
+        }
+
+        [TestMethod]
+        public void TestManyPath()
+        {
+            int idsource = 1315;
+            int j = 0;
+
+            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\nodes.csv"))
+            {
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(", ");
+                parser.ReadLine();
+                while (!parser.EndOfData)
+                {
+                    j++;
+                    string[] s = parser.ReadLine().Split(',');
+                    int csvTarget = Convert.ToInt32(s[0]);
+                    int csvPathN = Convert.ToInt32(s[1]);
+                    int numbeNode = _ComputeNodeNUmber(dijkstra.ComputeShortestPath(idsource, csvTarget).Value);
+                    Assert.AreEqual(csvPathN, numbeNode);
+                }
+            }
         }
     }
 }

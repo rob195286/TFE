@@ -7,9 +7,13 @@ namespace TFE
     public class Dijkstra
     {
         // Fast priority queue forward.
-        private FastPriorityQueue<State> _queue;
+        // private FastPriorityQueue<State> _queue;
         // Fast priority queue backward.
-        private FastPriorityQueue<State> _queueB; 
+        //  private FastPriorityQueue<State> _queueB; 
+        // Fast priority queue forward.
+        private PriorityQueue<State, double> _queue;
+        // Fast priority queue backward.
+        private PriorityQueue<State, double> _queueB; 
         // Graph sur lequel l'algorithme devra trouver le plus court chemin chemin.
         private Graph _graph;
         // Capacité maximum de la PQ avant qu'elle ne se redimensionne. Si sa valeur est par exemple de 200 et qu'elle est dépassée, alors elle se redimensionnera. 
@@ -25,8 +29,8 @@ namespace TFE
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
-            _queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
-            _queueB = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
+            _queue = new PriorityQueue<State, double>(_priorityQueueMaxCapacity);
+            _queueB = new PriorityQueue<State, double>(_priorityQueueMaxCapacity);
         }
 
         /// <summary>
@@ -64,9 +68,9 @@ namespace TFE
             // Incrémentation du nombre total de noeud ajouté dans les PQ.
             totalNumberOfnodes++;
             if (backwardPQ)
-                _queueB.Enqueue(state, (float)cost);
+                _queueB.Enqueue(state, cost);
             else
-                _queue.Enqueue(state, (float)cost);
+                _queue.Enqueue(state, cost);
         }
         /// <summary>
         ///     Réinitialise les PQ pour qu'elles puissent être à nouveau utilisées lors du prochain appel de l'algorithme.
@@ -233,7 +237,7 @@ namespace TFE
             return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NoPathFound);
         }
     }
-    public class State : FastPriorityQueueNode
+    public class State //: FastPriorityQueueNode
     {
         // Coût total (smme du cpupt des arêtes) pour atteindre le vertex qui sera ajouté à cet état.
         public double totalCost { get; } 
