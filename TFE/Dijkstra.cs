@@ -84,8 +84,8 @@ namespace TFE
 
         public KeyValuePair<double, State> ComputeShortestPath(int sourceVertexID, int endVertexID, bool x = false)
         {
-            // if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID))
-            //    return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
+             if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID))
+                return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
             lastVisitID++;
             _ClearQueue();
             totalNumberOfnodes = 0;
@@ -101,10 +101,8 @@ namespace TFE
                 tookNodeNumber++;
                 if (bestNode.state.getVertexID == endVertexID)
                 { return new KeyValuePair<double, State>(bestNode.cost, bestNode.state); }
-
                 if (_VertexHasBeenVisited(bestNode.state.vertex))
                 { continue; }
-
                 bestNode.state.vertex.lastVisit = lastVisitID;
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
@@ -121,10 +119,10 @@ namespace TFE
             return _NoPathFound(sourceVertexID, endVertexID, Messages.NoPathFound);
         }
 
-        public KeyValuePair<double, State> ComputeShortestPathWithHeuristic(int sourceVertexID, int endVertexID, bool withHeuristic = false)
+        public KeyValuePair<double, State> ComputeShortestPathWithHeuristic(int sourceVertexID, int endVertexID, bool withHeuristic = true)
         {
-            //  if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID)) 
-            //    return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
+              if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(endVertexID)) 
+                return _NoPathFound(sourceVertexID, endVertexID, Messages.NodeDontExist); // arrête si le noeud de départ ou celui recherché n'existe pas.
             lastVisitID++;
             _ClearQueue();
             totalNumberOfnodes = 0;
@@ -134,7 +132,6 @@ namespace TFE
             State initalState = new State(0, sourceVertex, 0);
             double cost = _CostEvaluation(sourceVertex, endVertex, 0, true, initalState);
             _AddPriotiyQueueNode(cost, initalState);
-            Dictionary<int, State> bestPaths = new Dictionary<int, State>();
 
             while (!_QueueIsEmpty())
             {
@@ -142,11 +139,8 @@ namespace TFE
                 tookNodeNumber++;
                 if (bestNode.state.getVertexID == endVertexID)
                 { return new KeyValuePair<double, State>(bestNode.cost, bestNode.state); }
-
                 if (_VertexHasBeenVisited(bestNode.state.vertex))
                 { continue; }
-
-                else { bestPaths.Add(bestNode.state.getVertexID, bestNode.state); }
                 bestNode.state.vertex.lastVisit = lastVisitID;
 
                 foreach (Edge nextEdge in _graph.GetNextEdges(bestNode.state.getVertexID, lastVisitID))
