@@ -85,42 +85,31 @@ namespace TFE
         }
         static void LaunchDijkstraBenchmart(Graph g)
         {
-            Stopwatch sw = new Stopwatch();
             List<int> sourceNodes = new List<int>();
             List<int> targetNodes = new List<int>();
             FindRoutablePoint(g, sourceNodes, targetNodes);
             int i = 0;
-            sw.Start();
-            /*         
             for(i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
             for (i = 0; i < 5; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
             for(i = 0; i < 5; i++)
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000); 
-           
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);            
             for (i = 0; i < 5; i++)
                 DijkstraBenchmark(g, sourceNodes, targetNodes, 2420);
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds / 1000);
-            */
-            sw.Reset();
 
-            sw.Start();
-            
-           // for(i = 0; i < 5; i++)
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
-            /*
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
-           // for(i = 0; i < 5; i++)
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
-          //  for(i = 0; i < 5; i++)
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
-          //  for (i = 0; i < 5; i++)
-                DijkstraBenchmark(g, sourceNodes, targetNodes, 2420, true);
-            */
-            sw.Stop();
-            Console.WriteLine(sw.ElapsedMilliseconds / 1000);
+            Console.WriteLine("------------------------------------");
+
+            for (i = 0; i < 5; i++)
+             DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
+             for (i = 0; i < 5; i++)
+                 DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
+             for(i = 0; i < 5; i++)
+             DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
+             for(i = 0; i < 5; i++)
+             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
+             for (i = 0; i < 5; i++)
+                 DijkstraBenchmark(g, sourceNodes, targetNodes, 2420, true);
         }
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage, bool crowFliesActivate = false)
         {

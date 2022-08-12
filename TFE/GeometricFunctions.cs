@@ -35,7 +35,7 @@ namespace TFE
         /// </returns>
         public static double EuclideanDistanceCostFromTo(Vertex currentNode, Vertex targetNode, double heuristicFactor = 0.008988227930074038)
         {
-            //heuristicFactor = 111257;
+            //heuristicFactor = 1/111.25663565496195;
             return Haversine(currentNode.latitude,
                             currentNode.longitude,
                             targetNode.latitude,

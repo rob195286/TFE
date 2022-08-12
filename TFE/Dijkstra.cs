@@ -6,7 +6,6 @@ namespace TFE
 {
     public class Dijkstra
     {
-       // private FastPriorityQueue<State> _queue;
         private PriorityQueue<State, double> _queue;
         private Graph _graph;
         private int _priorityQueueMaxCapacity;
@@ -18,7 +17,6 @@ namespace TFE
         {
             _graph = graph;
             _priorityQueueMaxCapacity = ppriorityQueueMaxCapacity;
-            //_queue = new FastPriorityQueue<State>(_priorityQueueMaxCapacity);
             _queue = new PriorityQueue<State, double>(_priorityQueueMaxCapacity);
         }
 
@@ -129,9 +127,8 @@ namespace TFE
             tookNodeNumber = 0;
             Vertex sourceVertex = _graph.GetVertex(sourceVertexID);
             Vertex endVertex = _graph.GetVertex(endVertexID);
-            State initalState = new State(0, sourceVertex, 0);
-            double cost = _CostEvaluation(sourceVertex, endVertex, 0, true, initalState);
-            _AddPriotiyQueueNode(cost, initalState);
+            double cost = _CostEvaluation(sourceVertex, endVertex, 0, true, new State(0, sourceVertex, 0));
+            _AddPriotiyQueueNode(cost, new State(0, sourceVertex, 0));
 
             while (!_QueueIsEmpty())
             {
@@ -158,7 +155,7 @@ namespace TFE
         }
     }
 
-    public class State : FastPriorityQueueNode
+    public class State
     {
         // Coût total (somme du coût des arêtes) pour atteindre le vertex qui sera ajouté à cet état + l'heuristique.
         public double totalCost { get; }
