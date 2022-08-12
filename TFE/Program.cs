@@ -89,27 +89,30 @@ namespace TFE
             List<int> targetNodes = new List<int>();
             FindRoutablePoint(g, sourceNodes, targetNodes);
             int i = 0;
-            for(i = 0; i < 5; i++)
+            int iteration = 4;
+            for(i = 0; i < iteration; i++)
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
+            for(i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
-            for (i = 0; i < 5; i++)
+            for (i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
-            for(i = 0; i < 5; i++)
+            for(i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);            
-            for (i = 0; i < 5; i++)
-                DijkstraBenchmark(g, sourceNodes, targetNodes, 2420);
+            for (i = 0; i < iteration; i++)
+                DijkstraBenchmark(g, sourceNodes, targetNodes, 2500);
 
             Console.WriteLine("------------------------------------");
 
-            for (i = 0; i < 5; i++)
+            for (i = 0; i < iteration; i++)
              DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
-             for (i = 0; i < 5; i++)
+             for (i = 0; i < iteration; i++)
                  DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
-             for(i = 0; i < 5; i++)
+             for(i = 0; i < iteration; i++)
              DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
-             for(i = 0; i < 5; i++)
+             for(i = 0; i < iteration; i++)
              DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
-             for (i = 0; i < 5; i++)
-                 DijkstraBenchmark(g, sourceNodes, targetNodes, 2420, true);
+             for (i = 0; i < iteration; i++)
+                 DijkstraBenchmark(g, sourceNodes, targetNodes, 2500, true);
         }
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage, bool crowFliesActivate = false)
         {
