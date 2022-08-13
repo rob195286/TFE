@@ -35,9 +35,6 @@ namespace TFE
             Console.WriteLine("debut du graph");
             Graph g = new Graph();
             Console.WriteLine("fin du graph");
-           
-          //  Test(g);
-
             var d = new Dijkstra(g);
 
             sw.Start();
@@ -46,7 +43,7 @@ namespace TFE
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
             Console.WriteLine("");
-            //  printRoadNameEquality(g, idNodeSource, idNodeTarget);
+
              LaunchDijkstraBenchmart(g);
         }
 
@@ -105,7 +102,7 @@ namespace TFE
             Console.WriteLine("------------------------------------");
 
             for (i = 0; i < iteration; i++)
-             DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
              for (i = 0; i < iteration; i++)
                  DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
              for(i = 0; i < iteration; i++)
@@ -119,7 +116,6 @@ namespace TFE
         {
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
-            Random myRand = new Random();
             string fileName = crowFliesActivate ? "Dijkstra_performances_with_heuristic.txt" : "Dijkstra_performances.txt";
             using (StreamWriter stream = File.AppendText(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\banchmark\" + fileName))
             {
@@ -129,13 +125,12 @@ namespace TFE
                     sw.Start();
                     for (int routage = 0; routage <= numberOfRoutage - 1; routage++)
                     {
-                        //int randomInt = (int)(myRand.NextDouble()*numberOfRoutage);
                         int idsource = coordSource[routage];
                         int idTarget = coordTarget[routage];
-                        if (!crowFliesActivate)
-                        { dj.ComputeShortestPath(idsource, idTarget, crowFliesActivate); }
+                        if (crowFliesActivate)
+                        { dj.ComputeShortestPathWithHeuristic(idsource, idTarget);  }
                         else
-                        { dj.ComputeShortestPathWithHeuristic(idsource, idTarget); }
+                        { dj.ComputeShortestPath(idsource, idTarget, crowFliesActivate); }
                     }
                     sw.Stop();
                     stream.WriteLine("{");
@@ -164,19 +159,19 @@ namespace TFE
                         flag = false;
                         continue;
                     }
-                        sourceNodes.Add(Convert.ToInt32(x[0]));
+                    sourceNodes.Add(Convert.ToInt32(x[0]));
                     targetNodes.Add(Convert.ToInt32(x[1]));
-                    /*
+                  /*
                     if (graph.VertexExist(Convert.ToInt32(x[0])))
                     {
+                        sourceNodes.Add(Convert.ToInt32(x[0]));
                     }
-                    else { Console.WriteLine("existe pas !!!!! source : " + x[0]); }
                     if (graph.VertexExist(Convert.ToInt32(x[1])))
                     {
                         targetNodes.Add(Convert.ToInt32(x[1]));
                     }
-                    else { Console.WriteLine("existe pas !!!!! target : " + x[1]); }*/
-                }                
+                  */
+                }
             }
         }
     }
