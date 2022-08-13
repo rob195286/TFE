@@ -89,7 +89,8 @@ namespace TFE
             List<int> targetNodes = new List<int>();
             FindRoutablePoint(g, sourceNodes, targetNodes);
             int i = 0;
-            int iteration = 4;
+            int iteration = 3;
+            
             for(i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
             for(i = 0; i < iteration; i++)
@@ -97,10 +98,10 @@ namespace TFE
             for (i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
             for(i = 0; i < iteration; i++)
-            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);            
+            DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);               
             for (i = 0; i < iteration; i++)
                 DijkstraBenchmark(g, sourceNodes, targetNodes, 2500);
-
+            
             Console.WriteLine("------------------------------------");
 
             for (i = 0; i < iteration; i++)
@@ -116,7 +117,6 @@ namespace TFE
         }
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage, bool crowFliesActivate = false)
         {
-            Console.WriteLine("Benchmarkt !!");
             Stopwatch sw = new Stopwatch();
             Dijkstra dj = new Dijkstra(graph);
             Random myRand = new Random();
@@ -164,126 +164,19 @@ namespace TFE
                         flag = false;
                         continue;
                     }
+                        sourceNodes.Add(Convert.ToInt32(x[0]));
+                    targetNodes.Add(Convert.ToInt32(x[1]));
+                    /*
+                    if (graph.VertexExist(Convert.ToInt32(x[0])))
+                    {
+                    }
+                    else { Console.WriteLine("existe pas !!!!! source : " + x[0]); }
                     if (graph.VertexExist(Convert.ToInt32(x[1])))
                     {
-                        sourceNodes.Add(Convert.ToInt32(x[1]));
+                        targetNodes.Add(Convert.ToInt32(x[1]));
                     }
-                    if (graph.VertexExist(Convert.ToInt32(x[2])))
-                    {
-                        targetNodes.Add(Convert.ToInt32(x[2]));
-                    }
-                }
-            }
-        }
-        static void CompareNAndH(Graph g)
-        {
-            bool isOk = true;
-            bool isOktmp = true;
-            Dijkstra dj = new Dijkstra(g);
-            List<int> sourceNodes = new List<int>();
-            List<int> targetNodes = new List<int>();
-            FindRoutablePoint(g, sourceNodes, targetNodes);
-            int error = 0;
-            for (int routage = 0; routage < 2330; routage++)
-            {
-                int idsource = sourceNodes[routage];
-                int idTarget = targetNodes[routage];
-                isOktmp = dj.ComputeShortestPath(idsource, idTarget).Key == dj.ComputeShortestPath(idsource, idTarget, true).Key;
-                if (!isOktmp)
-                {
-                    Console.WriteLine("routage N° : " + routage);
-                    Console.WriteLine("sourceNodes : " + sourceNodes[routage] + " || " + "targetNodes : " + targetNodes[routage]);
-                    Console.WriteLine();
-                    isOk = false;
-                    error++;
-                }
-            }
-            Console.WriteLine("error : " + error);
-            Console.WriteLine(isOk);
-        }
-        static void CompareHtoPg(Graph g)
-        {
-            int idsource = 1315;
-            bool isOk = true;
-            Dijkstra dj = new Dijkstra(g);
-            // List<int> targetNodes = new List<int>();
-            //FindRoutablePoint(g, new List<int>(), targetNodes);
-            int error = 0;
-
-            using (TextFieldParser parser = new TextFieldParser(@"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\costs.csv"))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(", ");
-                parser.ReadLine();
-                int j = 0;
-                while (!parser.EndOfData)
-                {
-                    // if (j >= targetNodes.Count)
-                    //    break;
-                    string[] s = parser.ReadLine().Split(',');
-                    double csvCost = Convert.ToDouble(s[0], CultureInfo.InvariantCulture);
-                    int csvVertexID = Convert.ToInt32(s[1]);
-                    double costH = dj.ComputeShortestPath(idsource, csvVertexID, true).Key;
-                    if (csvCost != costH)
-                    {
-                        isOk = false;
-                        Console.WriteLine("nok : " + error++ + " - csvCost : " + csvCost + "   costH : " + costH + "|| csvVertexID : " + csvVertexID);
-                    }
-                }
-                Console.WriteLine("error : " + error);
-                Console.WriteLine(isOk);
-            }
-        }
-        static void printRoadNameEquality(Graph g, int idNodeSource, int idNodeTarget,
-                                            string pathFile = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\path.csv")
-        {
-            var r = new Dijkstra(g).ComputeShortestPath(idNodeSource, idNodeTarget);
-            State state = r.Value;
-            int i = 0;
-            List<int> idL = new List<int>();
-
-            state = r.Value;
-            while (true)
-            {
-                idL.Add(state.vertex.id);
-                state = state.previousState;
-                i++;
-                if (state.previousState == null)
-                {
-                    idL.Add(state.vertex.id);
-                    i++;
-                    break;
-                }
-            }
-            idL.Reverse();
-            using (TextFieldParser parser = new TextFieldParser(pathFile))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(",");
-                parser.ReadLine();
-                bool isOk = true;
-                int j = 0;
-                while (!parser.EndOfData)
-                {
-                    if (j >= idL.Count)
-                    {
-                        isOk = false;
-                        break;
-                    }
-
-                    string s = parser.ReadLine();
-                    int csvid = Convert.ToInt32(s);
-                    int idindex = idL[j++];
-                    Console.Write("j : " + j + "    csvid : " + csvid + " id : " + idindex + " -> == ");
-                    Console.Write(csvid == idindex);
-                    if (csvid != idindex)
-                    {
-                        isOk = false;
-                        Console.WriteLine(" //////////////////////////////////");
-                    }
-                    Console.WriteLine();
-                }
-                Console.WriteLine(isOk);
+                    else { Console.WriteLine("existe pas !!!!! target : " + x[1]); }*/
+                }                
             }
         }
     }
