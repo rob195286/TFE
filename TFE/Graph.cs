@@ -13,14 +13,25 @@ namespace TFE
         public Dictionary<int, Vertex> _vertices = new Dictionary<int, Vertex>() { };
         // Ensemble de toutes les arêtes qui consituent le graphe.
         public Dictionary<long, List<Edge>> _edges = new Dictionary<long, List<Edge>>() { };
+        // Variable comptant le nombre d'arêtes ayant un sens.
         public int nombre_ways_oneway = 0;
+        // Variable comptant le nombre d'arêtes ayant deux sens.
         public int nombre_ways_twoway = 0;
 
+        /// <summary>
+        ///     Créer le graphe à partir d'un ficheir csv.
+        /// </summary>
+        /// <param name="filePath"> Chemin du csv contenant l'ensemble des données pour créer le graphe.</param>
         public Graph(string filePath = @"A:\3)_Bibliotheque\Documents\Ecam\Anne5\TFE\Code\ways.csv")
         {
             CreateGraph(filePath);
         }
 
+        /// <summary>
+        ///     Ajoute un vertex au graphe, soit dans la liste des vertexes (_vertices).
+        /// </summary>
+        /// <param name="vertex"> Vertex à ajouter.</param>
+        /// <returns> True s'il est ajouté, false sinon.</returns>
         private bool _AddVertex(Vertex vertex)
         {
             if (!VertexExist(vertex.id))// todo : éviter d'ajouter 2x la même key et d'avoir une exception
@@ -30,6 +41,16 @@ namespace TFE
             }
             return false;
         }
+        /// <summary>
+        ///     Récupère un vertex du dictionnaire de vertex s'il existe déjà ou bien en créer un nouveau et 
+        ///         l'ajoute au dictionnaire.
+        /// </summary>
+        /// <param name="csvRow"> La ligne du csv contenant les informations des arêtes et des vertices.</param>
+        /// <param name="isSourceVertex"> 
+        ///     Indique si le vertex sera un vertex source ou target dans le cas où on a une arête 
+        ///         bidirectionnelle.              
+        /// </param>
+        /// <returns> Retourne le vertex existant ou celui créé.</returns>
         private Vertex GetVertex(CSVwayData csvRow, bool isSourceVertex)
         {
             int id = isSourceVertex ? csvRow.source : csvRow.target;
@@ -58,6 +79,18 @@ namespace TFE
                 _edges[edge.osmID].Add(edge);
             }
         }
+        /// <summary>
+        ///     Même opération que pour le vertex, on récupère l'arête si elle existe, 
+        ///         sinon on retourne celle créée et ajoutée au dictionnaire d'arêtes.
+        /// </summary>
+        /// <param name="csvRow"> La ligne du csv contenant les informations des arêtes et des vertices.</param>
+        /// <param name="vSource"> Vertex source d'où part l'arête.</param>
+        /// <param name="vTarget"> Vertex target où mène l'arête.</param>
+        /// <param name="isForwardEdge"> 
+        ///     Indique si l'arête est une arête forward ou backward 
+        ///     dans le cas où elle est bidirectionnelle.
+        /// </param>
+        /// <returns> Retourne l'arête existante ou celle créée</returns>
         private Edge _GetEdge(CSVwayData csvRow, Vertex vSource, Vertex vTarget, bool isForwardEdge)
         {
             Edge edge = new Edge(csvRow.length,
@@ -72,6 +105,12 @@ namespace TFE
             _AddEdge(edge);
             return edge;
         }
+        /// <summary>
+        ///     Fonction qui se charge de créer le graphe en ajoutant les vertices et les arêtes 
+        ///         dans leur dictionnaire respectif.
+        ///     Cette fonction prendra les lignes du CSV une par une pour pouvoir créer les vertices et arêtes.
+        /// </summary>
+        /// <param name="filePath"> Chemin d'accès à partir d'où le fichier CSV contenant les informations seront prise. </param>
         private void CreateGraph(string filePath)
         {
             using (var reader = new StreamReader(filePath))
@@ -94,10 +133,20 @@ namespace TFE
                 }
             }
         }
+        /// <summary>
+        ///     Fonction permettant de vérifier si un vertex existe ou pas dans le graphe.
+        /// </summary>
+        /// <param name="id"> Identifiant du vertex dont on aimerais savoir s'il existe. </param>
+        /// <returns> Renvois true s'il existe, false sinon. </returns>
         public bool VertexExist(int id)
         {
             return _vertices.ContainsKey(id);
         }
+        /// <summary>
+        ///     Fonction permettant de vérifier si une arête existe ou pas dans le graphe.
+        /// </summary>
+        /// <param name="edge"> Edge dont on veut vérifier l'existance.</param>
+        /// <returns> Renvois true si elle existe, false sinon.</returns>
         public bool EdgeExist(Edge edge)
         {
             if (_edges.ContainsKey(edge.osmID))
@@ -106,9 +155,14 @@ namespace TFE
             }
             else { return false; }
         }
+        /// <summary>
+        ///     Fonction permettant d'obtenir un vertex contenu dans le graphe de l'extérieur.
+        /// </summary>
+        /// <param name="vertexID"> Identifiant du vertex à trouver. </param>
+        /// <returns> Retourne le vertex correspondant à l'identifiant s'il existe, sinon renvois une exception. </returns>
         public Vertex GetVertex(int vertexID)
         {
-            Vertex vertex = null; // todo : voir comment gére exception
+            Vertex vertex = null;
             try
             {
                 vertex = _vertices[vertexID];
@@ -129,20 +183,20 @@ namespace TFE
         {
             return _edges[osmID];
         }
-        public Edge GetEdge(long osmID, int vertexSourceID, int vertexTargetID, double cost)
-        {
-            foreach (Edge edge in GetEdges(osmID))
-            {
-                if (edge.sourceVertex.id == vertexSourceID && edge.targetVertex.id == vertexTargetID && edge.cost == cost)
-                    return edge;
-            }
-            return null;
-        }
+        /// <summary>
+        ///     Fonction permettant de récupérer les arêtes du vertex correspondant à un idfentifiant donné
+        ///         pour le premier sens (forward).
+        ///     Elle permet aussi de vérifier si un noeud a déjà été visité pour ne pas retourner
+        ///         des noeuds inutiles.
+        /// </summary>
+        /// <param name="vertexID"> Identifiant du vertex à partir duquel on veut récupérer les arêtes. </param>
+        /// <param name="visitId"> Identifiant correspondant au numéro d'appel de l'algorithme. </param>
+        /// <returns> Renvois les arêtes les une après les autres si elles n'ont pas déjà été visitées. </returns>
         public IEnumerable<Edge> GetNextEdges(int vertexID, int visitId)
         {
             foreach (Edge edge in GetVertex(vertexID).outgoingEdges)
             {
-                if (edge.cost >= 0 && edge.targetVertex.lastVisit != visitId)
+                if (edge.cost >= 0)// && edge.targetVertex.lastVisit != visitId)
                 {
                     yield return edge;
                 }
@@ -200,6 +254,10 @@ namespace TFE
             longitude = plon;
         }
 
+        /// <summary>
+        ///     Ajoute une arête au noeud qui mène vers le noued suivant.
+        /// </summary>
+        /// <param name="edge"> Arête à ajouter.</param>
         public void AddOutgoingEdge(Edge edge)
         {
             outgoingEdges.Add(edge);
@@ -285,7 +343,10 @@ namespace TFE
                    cost == other.cost;
         }
     }
-
+    /// <summary>
+    ///     Classe se chargeant de récupérer les valeurs contenues dans un fichier CSV pour pouvoir les utiliser lors de 
+    ///         la création du graphe dans lafonction "_createGraph".
+    /// </summary>
     public class CSVwayData
     {
         [Index(0)]
@@ -299,10 +360,8 @@ namespace TFE
         [Index(4)]
         public int target { get; set; }
         [Index(5)]
-        [NumberStyles(NumberStyles.Number | NumberStyles.AllowExponent)]
         public double cost { get; set; }
         [Index(6)]
-        [NumberStyles(NumberStyles.Number | NumberStyles.AllowExponent)]
         public double reverse_cost { get; set; }
         [Index(7)]
         public double? cost_s { get; set; }

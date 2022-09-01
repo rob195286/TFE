@@ -14,21 +14,8 @@ namespace TFE
     {
         static void Main(string[] args)
         {
-            //int idNodeSource = 121155;
             int idNodeSource = 589961; // arlon
-            int idNodeTarget = 458523; // bruge
-            //int idNodeTarget = 901419;
-            //int idNodeTarget = 597177;
-            //idNodeSource = 193183; // p1 bxl
-            // idNodeTarget = 778238; // p2 bxl
-            //idNodeSource = 354192;
-            //idNodeTarget = 912989;
-            idNodeSource = 930177; // 15
-            idNodeTarget = 976710;
-            idNodeSource = 1315; // 15
-            idNodeTarget = 318262;
-            idNodeSource = 130225; // 15
-            idNodeTarget = 593276;
+            int idNodeTarget = 458523; // bruge            
 
             Stopwatch sw = new Stopwatch();
 
@@ -38,18 +25,17 @@ namespace TFE
             var d = new Dijkstra(g);
 
             sw.Start();
-          //  dijkstra(d, idNodeSource, idNodeTarget, false);
-            // dijkstra(d, idNodeSource, idNodeTarget, true);
+            //  dijkstra(d, idNodeSource, idNodeTarget, false);
+             dijkstra(d, idNodeSource, idNodeTarget, true);
             sw.Stop();
             Console.WriteLine("temps : " + sw.ElapsedMilliseconds + " ms");
             Console.WriteLine("");
-
-             LaunchDijkstraBenchmart(g);
+            //  LaunchDijkstraBenchmart(g);
         }
 
         static void dijkstra(Dijkstra d, int idNodeSource, int idNodeTarget, bool withCrowFliesOption = false)
         {
-            var r = d.ComputeShortestPath(idNodeSource, idNodeTarget, withCrowFliesOption);
+            var r = d.ComputeShortestPathWithHeuristic(idNodeSource, idNodeTarget);
 
             int i = 0;
             State state = r.Value;
@@ -69,7 +55,6 @@ namespace TFE
             {
                 Console.Write(j++);
                 Console.Write(" vertex id : " + v.id);
-                //Console.Write("    road name : " + nodeNroadName.Value);
                 Console.WriteLine();
             }
 
@@ -77,8 +62,8 @@ namespace TFE
             Console.WriteLine("i : " + i);
             Console.WriteLine("totalCost : " + r.Key);
             Console.WriteLine("costOnly : " + r.Value.costOnly);
-            //Console.WriteLine("nbr de noeud pris de la queue : " + d.tookNodeNumber);
-            //Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
+            Console.WriteLine("nbr de noeud pris de la queue : " + d.tookNodeNumber);
+            Console.WriteLine("nbr total de noeud pri : " + d.totalNumberOfnodes);
         }
         static void LaunchDijkstraBenchmart(Graph g)
         {
@@ -86,30 +71,30 @@ namespace TFE
             List<int> targetNodes = new List<int>();
             FindRoutablePoint(g, sourceNodes, targetNodes);
             int i = 0;
-            int iteration = 3;
-            
+            int iteration = 5;
+            /*
             for(i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100);
             for(i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 250);
             for (i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 500);
-            for(i = 0; i < iteration; i++)
+            for(i = 0; i < iteration; i++)*/
             DijkstraBenchmark(g, sourceNodes, targetNodes, 1000);               
-            for (i = 0; i < iteration; i++)
+            //for (i = 0; i < iteration; i++)
                 DijkstraBenchmark(g, sourceNodes, targetNodes, 2500);
             
             Console.WriteLine("------------------------------------");
-
+            /*
             for (i = 0; i < iteration; i++)
             DijkstraBenchmark(g, sourceNodes, targetNodes, 100, true);
              for (i = 0; i < iteration; i++)
                  DijkstraBenchmark(g, sourceNodes, targetNodes, 250, true);
              for(i = 0; i < iteration; i++)
              DijkstraBenchmark(g, sourceNodes, targetNodes, 500, true);
-             for(i = 0; i < iteration; i++)
+             for(i = 0; i < iteration; i++)*/
              DijkstraBenchmark(g, sourceNodes, targetNodes, 1000, true);
-             for (i = 0; i < iteration; i++)
+             //for (i = 0; i < iteration; i++)
                  DijkstraBenchmark(g, sourceNodes, targetNodes, 2500, true);
         }
         static void DijkstraBenchmark(Graph graph, List<int> coordSource, List<int> coordTarget, int numberOfRoutage, bool crowFliesActivate = false)
@@ -130,7 +115,7 @@ namespace TFE
                         if (crowFliesActivate)
                         { dj.ComputeShortestPathWithHeuristic(idsource, idTarget);  }
                         else
-                        { dj.ComputeShortestPath(idsource, idTarget, crowFliesActivate); }
+                         dj.ComputeShortestPath(idsource, idTarget); 
                     }
                     sw.Stop();
                     stream.WriteLine("{");
@@ -160,17 +145,7 @@ namespace TFE
                         continue;
                     }
                     sourceNodes.Add(Convert.ToInt32(x[0]));
-                    targetNodes.Add(Convert.ToInt32(x[1]));
-                  /*
-                    if (graph.VertexExist(Convert.ToInt32(x[0])))
-                    {
-                        sourceNodes.Add(Convert.ToInt32(x[0]));
-                    }
-                    if (graph.VertexExist(Convert.ToInt32(x[1])))
-                    {
-                        targetNodes.Add(Convert.ToInt32(x[1]));
-                    }
-                  */
+                    targetNodes.Add(Convert.ToInt32(x[1]));                 
                 }
             }
         }

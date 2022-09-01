@@ -119,13 +119,7 @@ namespace TestTFE.UnitTests
 
         [TestMethod]
         public void TestGetEdge()
-        {
-            Assert.AreEqual(true, graph.GetEdge(975383472, 154544, 744271, 0.0013712697638836823) != null);
-            Edge fakeEdge = new Edge(0, 0, 0, 0, 0, 0, 0);
-            fakeEdge.sourceVertex = new Vertex(154544, 0, 0);
-            fakeEdge.targetVertex = new Vertex(744271, 0, 0);
-            graph._AddEdge(fakeEdge);
-            Assert.AreEqual(true, graph.GetEdge(0, 154544, 744271, 0) != null);
+        {                        
             //-------------------------------------------------------------------  Par osm
             Assert.AreEqual(4, graph.GetEdges(197576).Count);
             Assert.AreEqual(4, graph.GetEdges(212824).Count);
