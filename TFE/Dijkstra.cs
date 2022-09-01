@@ -1,18 +1,12 @@
-﻿using Priority_Queue; // fast-priority queue
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace TFE
 {
     public class Dijkstra
-    {
-        // Fast priority queue forward.
-        // private FastPriorityQueue<State> _queue;
-        // Fast priority queue backward.
-        //  private FastPriorityQueue<State> _queueB; 
-        // Fast priority queue forward.
+    {   // File d'attente prioriaire forward.
         private PriorityQueue<State, double> _queue;
-        // Fast priority queue backward.
+        // File d'attente prioriaire backward.
         private PriorityQueue<State, double> _queueB; 
         // Graph sur lequel l'algorithme devra trouver le plus court chemin chemin.
         private Graph _graph;
@@ -104,9 +98,8 @@ namespace TFE
         /// <param name="destinationVertexID"> Vertex de destination vers lequel on veut trouver un chemin et d'où la recherche backward commence. </param>
         /// <param name="message"></param>
         /// <returns> Retourne une clé-valeur où le coût est null et le state un objet vide. </returns>
-        private KeyValuePair<double, State> _NoPathFound(int sourceVertexID, int destinationVertexID, string message)
+        private KeyValuePair<double, State> _NoPathFound()
         {
-            //throw new InvalidOperationException($"{message} \n Noeud source -> {sourceVertexID}, noeud de destination -> {destinationVertexID}");
             return new KeyValuePair<double, State>();
         }
         /// <summary>
@@ -156,7 +149,7 @@ namespace TFE
             Dictionary<int, State> bestPathNodesBackward = new Dictionary<int, State>();
             if (!_graph.VertexExist(sourceVertexID) || !_graph.VertexExist(destinationVertexID))
                 // Arrête si le noeud de départ ou celui recherché n'existe pas
-                return _NoPathFound(sourceVertexID, destinationVertexID, Messages.VertexDontExist); 
+                return _NoPathFound(); 
             lastVisit++;
             // Réinitialisation des PQ.
             _ClearQueue();
@@ -234,7 +227,7 @@ namespace TFE
                     }
                 }
             }
-            return _NoPathFound(sourceVertexID, destinationVertexID, Messages.NoPathFound);
+            return _NoPathFound();
         }
     }
     public class State //: FastPriorityQueueNode
